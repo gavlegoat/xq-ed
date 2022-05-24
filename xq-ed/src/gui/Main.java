@@ -1,25 +1,43 @@
 package gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import javax.swing.JFrame;
-import javax.swing.JButton;
+import java.io.IOException;
+import java.net.URL;
 
-public class Main {
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+/* High-level application layout:
+ * +-----------+---+------------+
+ * |           | M |            |
+ * |   Board   | o |            |
+ * |           | v |  Comments  |
+ * +-----------+ e |            |
+ * |    Nav    | s |            |
+ * +----------------------------+
+ * |     Graph    |  Analysis   |
+ * |              |             |
+ * +--------------+-------------+
+ */
+
+public class Main extends Application {
 
 	public static void main(String[] args) {
-		JFrame frame = new JFrame();
-		frame.setSize(100, 100);
-		frame.setLocationRelativeTo(null);
-		JButton close = new JButton("close");
-        close.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-        	}
-        });
-        frame.add(close);
-        frame.setVisible(true);
+		launch(args);
+	}
+	
+	@Override
+	public void start(Stage primaryStage) throws IOException {
+		URL fxml = getClass().getResource("/res/interface.fxml");
+		FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(fxml);
+		VBox topLevel = loader.<VBox>load();
+		
+		Scene scene = new Scene(topLevel);
+		primaryStage.setScene(scene);
+		primaryStage.show();
 	}
 
 }
