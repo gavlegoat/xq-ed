@@ -113,15 +113,6 @@ public class Position {
 	}
 	
 	/**
-	 * Remove the piece at a given point if it exists.
-	 * @param file The file of the square to clear.
-	 * @param rank The rank of the square to clear.
-	 */
-	public void clearPiece(int file, int rank) {
-		board[file][rank] = new Piece();
-	}
-	
-	/**
 	 * Place a piece at a given point.
 	 * @param file The file to put a piece at.
 	 * @param rank The rank to put a piece at.
@@ -129,6 +120,15 @@ public class Position {
 	 */
 	public void setPiece(int file, int rank, Piece piece) {
 		board[file][rank] = piece;
+	}
+	
+	/**
+	 * Remove the piece at a given point if it exists.
+	 * @param file The file of the square to clear.
+	 * @param rank The rank of the square to clear.
+	 */
+	public void clearPiece(int file, int rank) {
+		setPiece(file, rank, new Piece());
 	}
 	
 	/**

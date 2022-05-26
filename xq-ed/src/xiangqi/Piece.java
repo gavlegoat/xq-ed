@@ -24,13 +24,9 @@ public class Piece {
 		RED, BLACK
 	}
 	
-	/**
-	 * The color of this piece.
-	 */
+	/** The color of this piece. */
 	private Color color;
-	/**
-	 * The type of this piece.
-	 */
+	/** The type of this piece. */
 	private Type type;
 	
 	/**

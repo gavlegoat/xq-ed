@@ -11,40 +11,22 @@ import javafx.util.Pair;
  */
 public class GameTree {
 	
-	/**
-	 * The current board position.
-	 */
+	/** The current board position. */
 	private Position position;
 	
-	/**
-	 * The position before this one in the tree, if it exists.
-	 */
+	/** The position before this one in the tree, if it exists. */
 	private Optional<GameTree> parent;
 	
-	/**
-	 * The move that led to this position.
-	 */
+	/** The move that led to this position. */
 	private Optional<Move> move;
 	
-	/**
-	 * A comment for this position.
-	 */
+	/** A comment for this position. */
 	private String comment;
 	
-	/**
-	 * The main successor of this position. This should be empty if this is the
-	 * last move in the main line or if this position is off the main line.
-	 */
-	private Optional<Pair<Move, GameTree>> mainContinuation;
-	
-	/**
-	 * Alternative successor moves.
-	 */
+	/** Moves from the position. The first entry is the main continuation. */
 	private ArrayList<Pair<Move, GameTree>> variations;
 	
-	/**
-	 * The player who can move in this position.
-	 */
+	/** The player who can move in this position. */
 	private Piece.Color playerToMove;
 	
 	/**
@@ -55,7 +37,6 @@ public class GameTree {
 		parent = Optional.empty();
 		move = Optional.empty();
 		setComment("");
-		mainContinuation = Optional.empty();
 		variations = new ArrayList<>();
 		playerToMove = Piece.Color.RED;
 	}
@@ -72,7 +53,6 @@ public class GameTree {
 		parent = Optional.of(par);
 		move = Optional.of(m);
 		setComment("");
-		mainContinuation = Optional.empty();
 		variations = new ArrayList<>();
 		playerToMove = par.getPlayerToMove() == Piece.Color.RED ? Piece.Color.BLACK : Piece.Color.RED;
 	}
@@ -133,8 +113,8 @@ public class GameTree {
 	 * Determine whether this node has a successor on the main line.
 	 * @return True if this move has a main line successor.
 	 */
-	public boolean hasMainContinuation() {
-		return mainContinuation.isPresent();
+	public boolean hasContinuation() {
+		return !variations.isEmpty();
 	}
 
 	/**
@@ -144,30 +124,22 @@ public class GameTree {
 	 * @return The main continuation from this node.
 	 * @throws NoSuchElementException If there is no main continuation.
 	 */
-	public Pair<Move, GameTree> getMainContinuation() throws NoSuchElementException {
-		return mainContinuation.orElseThrow();
-	}
-
-	/**
-	 * Set the main continuation for this node.
-	 * @param move The move from this node on the main continuation.
-	 */
-	public void setMainContinuation(Move move) {
-		Position next = position.makeMove(move);
-		GameTree newNode = new GameTree(next, this, move);
-		mainContinuation = Optional.of(new Pair<>(move, newNode));
+	public Pair<Move, GameTree> getMainContinuation() {
+		return variations.get(0);
 	}
 	
 	/**
 	 * Add a variation to this node.
 	 * @param move The move to add as a variation.
 	 */
-	public void addVariation(Move move) {
-		Position next = position.makeMove(move);
-		GameTree newNode = new GameTree(next, this, move);
+	public void addVariation(Move move, GameTree newNode) {
 		variations.add(new Pair<>(move, newNode));
 	}
 
+	/**
+	 * Check which player is set to move.
+	 * @return The player whose turn it is.
+	 */
 	public Piece.Color getPlayerToMove() {
 		return playerToMove;
 	}

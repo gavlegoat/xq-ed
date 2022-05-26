@@ -10,14 +10,10 @@ import javafx.util.Pair;
  */
 public class Game {
 
-	/**
-	 * The tags for this game.
-	 */
+	/** The tags for this game. */
 	private ArrayList<Pair<String, String>> tags;
 	
-	/**
-	 * The moves of this game (including variations).
-	 */
+	/** The moves of this game (including variations). */
 	private GameTree gameTree;
 	
 	/**
@@ -72,5 +68,13 @@ public class Game {
 	 */
 	public GameTree getGameTree() {
 		return gameTree;
+	}
+	
+	/**
+	 * Set the game tree for this game.
+	 * @param gt The new game tree.
+	 */
+	public void setGameTree(GameTree gt) {
+		gameTree = gt;
 	}
 }

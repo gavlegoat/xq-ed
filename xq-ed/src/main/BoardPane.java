@@ -18,39 +18,74 @@ import xiangqi.Position;
  */
 public class BoardPane extends Canvas {
 	
+	/** The starting width of the board. */
 	private static final int initialWidth = 450;
+	/** The starting height of the board. */
 	private static final int initialHeight = 600;
 	
+	/** A path to the board image. */
 	private String boardPath;
+	/** A path to the folder where piece images are stored. */
 	private String piecesBase;
 	
+	/** The aspect ratio of the board. */
 	private double boardRatio;
 	
+	/** The current board image. */
 	private Image board = null;
+	/** The current image for red pawns. */
 	private Image redPawn = null;
+	/** The current image for red cannons. */
 	private Image redCannon = null;
+	/** The current image for red rooks. */
 	private Image redRook = null;
+	/** The current image for red horses. */
 	private Image redHorse = null;
+	/** The current image for red elephants. */
 	private Image redElephant = null;
+	/** The current image for red advisors. */
 	private Image redAdvisor = null;
+	/** The current image for the red king. */
 	private Image redKing = null;
+	/** The current image for black pawns. */
 	private Image blackPawn = null;
+	/** The current image for black cannons. */
 	private Image blackCannon = null;
+	/** The current image for black rooks. */
 	private Image blackRook = null;
+	/** The current image for black horses. */
 	private Image blackHorse = null;
+	/** The current image for black elephants. */
 	private Image blackElephant = null;
+	/** The current image for black advisors. */
 	private Image blackAdvisor = null;
+	/** The current image for the black king. */
 	private Image blackKing = null;
 	
+	/**
+	 * Can be set to force reload all of the images. This may be useful if the
+	 * size of the board changes because the scaling algorithm used on loading
+	 * is smoother than the one used on drawing.
+	 */
 	private boolean imagesNeedToBeReloaded;
+	
+	/** The x coordinate of the top-left corner of the board. */
 	private double cornerX;
+	/** The y coordinate of the top-left corner of the board. */
 	private double cornerY;
+	/** The size of a single square. */
 	private double squareSize;
 	
+	/** The piece currently being moved, if applicable. */
 	private Piece movingPiece;
+	/** The x coordinate of a piece being dragged. */
 	private double movingX;
+	/** The y coordinate of a piece being dragged. */
 	private double movingY;
 	
+	/**
+	 * Create a new pane.
+	 */
 	public BoardPane() {
 		super(initialWidth, initialHeight);
 		
@@ -183,6 +218,9 @@ public class BoardPane extends Canvas {
 		}
 	}
 	
+	/**
+	 * Draw the piece being dragged, if applicable.
+	 */
 	public void drawMovingPiece() {
 		if (movingPiece.isEmpty()) {
 			return;
@@ -245,42 +283,77 @@ public class BoardPane extends Canvas {
 		gc.drawImage(piece, movingX - 0.5 * squareSize, movingY - 0.5 * squareSize);
 	}
 	
+	/**
+	 * Convert a pixel value on the pane to a logical board position.
+	 * @param x The pixel x value.
+	 * @param y The pixel y value.
+	 * @return The (file, rank) position on the board.
+	 */
 	public Pair<Integer, Integer> getSquareFromPixels(double x, double y) {
 		double normX = (x - cornerX) / squareSize;
 		double normY = (y - cornerY) / squareSize - 1;
 		return new Pair<>((int) normX, (int) normY);
 	}
 	
-	public void markSquares(List<Pair<Integer, Integer>> moves) {
+	/**
+	 * Mark some positions on the board. This is primarily used to indicate
+	 * legal moves after the user has selected a piece.
+	 * @param points The points to mark.
+	 */
+	public void markSquares(List<Pair<Integer, Integer>> points) {
 		GraphicsContext gc = getGraphicsContext2D();
 		gc.setFill(Color.color(0.0, 1.0, 0.0, 0.5));
-		for (Pair<Integer, Integer> sq : moves) {
+		for (Pair<Integer, Integer> sq : points) {
 			double x = cornerX + squareSize * (sq.getKey() + 0.5);
 			double y = cornerY + squareSize * (sq.getValue() + 1.5);
 			gc.fillOval(x - 0.2 * squareSize, y - 0.2 * squareSize, 0.4 * squareSize, 0.4 * squareSize);
 		}
 	}
 
+	/**
+	 * Get the piece currently being moved.
+	 * @return The currently selected piece.
+	 */
 	public Piece getMovingPiece() {
 		return movingPiece;
 	}
 
+	/**
+	 * Set the piece currently being moved.
+	 * @param movingPiece The new piece to move.
+	 */
 	public void setMovingPiece(Piece movingPiece) {
 		this.movingPiece = movingPiece;
 	}
 
+	/**
+	 * Get the current pixel position of a piece being dragged.
+	 * @return The x coordinate of a piece being dragged.
+	 */
 	public double getMovingX() {
 		return movingX;
 	}
 
+	/**
+	 * Set the pixel position of a piece being dragged.
+	 * @param movingX The new x coordinate of the dragged piece.
+	 */
 	public void setMovingX(double movingX) {
 		this.movingX = movingX;
 	}
 
+	/**
+	 * Get the current pixel position of a piece being dragged.
+	 * @return The y coordinate of a piece being dragged.
+	 */
 	public double getMovingY() {
 		return movingY;
 	}
 
+	/**
+	 * Set the pixel position of a piece being dragged.
+	 * @param movingX The new x coordinate of the dragged piece.
+	 */
 	public void setMovingY(double movingY) {
 		this.movingY = movingY;
 	}

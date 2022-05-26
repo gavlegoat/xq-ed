@@ -35,8 +35,7 @@
                      onMouseClicked="#handleClick"
                      onDragDetected="#handleDragStart"
                      onMouseDragged="#handleDrag"
-                     onMouseDragReleased="#handleDragEnd"
-                     onKeyTyped="#handleKey"/>
+                     onMouseDragReleased="#handleDragEnd"/>
         </center>
         <bottom>
           <HBox>
@@ -52,7 +51,9 @@
       </BorderPane>
       <VBox>
         <Label text="Comment"/>
-        <TextArea fx:id="commentArea"/>
+        <TextArea fx:id="commentArea"
+                  wrapText="true"
+                  onKeyTyped="#updateComment"/>
       </VBox>
     </SplitPane>
     <SplitPane>

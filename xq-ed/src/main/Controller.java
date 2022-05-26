@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
@@ -22,21 +23,36 @@ import xiangqi.Position;
  */
 public class Controller {
 
-	/**
-	 * The game currently being displayed.
-	 */
+	/** The game currently being displayed. */
 	private Game game;
+	/** The game tree node corresponding to the current board position. */
 	private GameTree current;
 	
+	/**
+	 * Indicates whether a piece is currently being moved (either by a two-click
+	 * method or click-and-drag).
+	 */
 	private boolean movingPiece;
+	/**
+	 * If a piece is currently moving, this keeps track of the possible
+	 * destinations.
+	 */
 	private ArrayList<Pair<Integer, Integer>> movingList;
+	/** The file where the current move started. */
 	private int startFile;
+	/** The rank where the current move started. */
 	private int startRank;
 	
+	/** The pane where a user can enter comments on the current position. */
 	public TextArea commentArea;
+	/** The pane where the move list is displayed. */
 	public MovePane movePane;
+	/** The pane where the board is displayed. */
 	public BoardPane boardPane;
 	
+	/**
+	 * Construct a new controller with a fresh game.
+	 */
 	public Controller() {
 		game = new Game();
 		current = game.getGameTree();
@@ -54,12 +70,23 @@ public class Controller {
 	}
 	
 	/**
+	 * Update all of the relevant areas that change when the current position
+	 * changes.
+	 */
+	private void updateAll() {
+		boardPane.drawBoard(current.getPosition());
+		commentArea.setText(current.getComment());
+	}
+	
+	/**
 	 * Move to the beginning of the current game.
 	 */
 	@FXML
 	public void goToBeginning() {
-		System.out.println("Beginning");
-		// TODO
+		while (current.hasParent()) {
+			current = current.getParent();
+		}
+		updateAll();
 	}
 	
 	/**
@@ -67,8 +94,10 @@ public class Controller {
 	 */
 	@FXML
 	public void goBack() {
-		System.out.println("Back");
-		// TODO
+		if (current.hasParent()) {
+			current = current.getParent();
+		}
+		updateAll();
 	}
 	
 	/**
@@ -76,8 +105,10 @@ public class Controller {
 	 */
 	@FXML
 	public void goForward() {
-		System.out.println("Forward");
-		// TODO
+		if (current.hasContinuation()) {
+			current = current.getMainContinuation().getValue();
+		}
+		updateAll();
 	}
 	
 	/**
@@ -85,8 +116,10 @@ public class Controller {
 	 */
 	@FXML
 	public void goToEnd() {
-		System.out.println("End");
-		// TODO
+		while (current.hasContinuation()) {
+			current = current.getMainContinuation().getValue();
+		}
+		updateAll();
 	}
 	
 	/**
@@ -95,6 +128,19 @@ public class Controller {
 	@FXML
 	public void checkAndExit() {
 		Platform.exit();
+	}
+	
+	/**
+	 * Make a move and update all fields as appropriate.
+	 * @param m The move to make.
+	 */
+	private void makeMove(Move m) {
+		Position newPos = current.getPosition().clone();
+		newPos.clearPiece(m.getFromSquare().getKey(), m.getFromSquare().getValue());
+		newPos.setPiece(m.getToSquare().getKey(), m.getToSquare().getValue(), m.getPiece());
+		GameTree newNode = new GameTree(newPos, current, m);
+		current.addVariation(m, newNode);
+		current = newNode;
 	}
 	
 	/**
@@ -107,24 +153,24 @@ public class Controller {
 		int file = square.getKey();
 		int rank = square.getValue();
 		Position pos = current.getPosition();
+		// If a piece is currently moving, then this click should either
+		// complete or cancel that move.
 		if (movingPiece) {
 			for (Pair<Integer, Integer> move : movingList) {
 				if (file == move.getKey() && rank == move.getValue()) {
 					Piece p = pos.pieceAt(startFile, startRank);
 					Move m = new Move(p, new Pair<>(startFile, startRank), move);
-					Position newPos = pos.clone();
-					newPos.clearPiece(startFile, startRank);
-					newPos.setPiece(file, rank, p);
-					current = new GameTree(newPos, current, m);
+					makeMove(m);
 					break;
 				}
 			}
 			movingPiece = false;
 			startFile = -1;
 			startRank = -1;
-			boardPane.drawBoard(current.getPosition());
+			updateAll();
 			return;
 		}
+		// Otherwise, this click should start a move.
 		if (pos.hasPieceAt(file, rank) &&
 				pos.pieceAt(file, rank).getColor() == current.getPlayerToMove()) {
 			ArrayList<Pair<Integer, Integer>> moves =
@@ -163,6 +209,10 @@ public class Controller {
 		}
 	}
 	
+	/**
+	 * Redraw the board pane as a piece is dragged.
+	 * @param e The dragging event.
+	 */
 	@FXML
 	public void handleDrag(MouseEvent e) {
 		if (!movingPiece) {
@@ -196,10 +246,7 @@ public class Controller {
 			if (file == move.getKey() && rank == move.getValue()) {
 				Piece p = pos.pieceAt(startFile, startRank);
 				Move m = new Move(p, new Pair<>(startFile, startRank), move);
-				Position newPos = pos.clone();
-				newPos.clearPiece(startFile, startRank);
-				newPos.setPiece(file, rank, p);
-				current = new GameTree(newPos, current, m);
+				makeMove(m);
 				break;
 			}
 		}
@@ -213,11 +260,11 @@ public class Controller {
 	}
 	
 	/**
-	 * Move forward or backward with the forward and back keys.
+	 * Update the comment text for the current position.
 	 * @param e The key event.
 	 */
 	@FXML
-	public void handleKey(KeyEvent e) {
-		// TODO
+	public void updateComment(KeyEvent e) {
+		current.setComment(commentArea.getText());
 	}
 }

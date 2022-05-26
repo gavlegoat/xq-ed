@@ -7,19 +7,13 @@ import javafx.util.Pair;
  */
 public class Move {
 
-	/**
-	 * The piece that moved.
-	 */
+	/** The piece that moved. */
 	private Piece piece;
 	
-	/**
-	 * The square it moved from.
-	 */
+	/** The square it moved from. */
 	private Pair<Integer, Integer> fromSquare;
 	
-	/**
-	 * The square it moved to.
-	 */
+	/** The square it moved to. */
 	private Pair<Integer, Integer> toSquare;
 	
 	/**
@@ -58,7 +52,6 @@ public class Move {
 		return piece;
 	}
 	
-	// Move overrides hashCode to work correctly in the GameTree hash map.
 	@Override
 	public int hashCode() {
 		// a square is a pair (i, j) with 0 <= i <= 8 and 0 <= j <= 9
