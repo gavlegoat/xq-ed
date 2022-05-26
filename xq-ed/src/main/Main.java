@@ -1,4 +1,4 @@
-package gui;
+package main;
 
 import java.io.IOException;
 import java.net.URL;
@@ -30,13 +30,19 @@ public class Main extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) throws IOException {
-		URL fxml = getClass().getResource("/res/interface.fxml");
+		URL fxml = getClass().getResource("/interface.fxml");
+		Controller ctrl = new Controller();
 		FXMLLoader loader = new FXMLLoader();
+		loader.setController(ctrl);
 		loader.setLocation(fxml);
 		VBox topLevel = loader.<VBox>load();
 		
+		// Once FXML is loaded, the controller fields should be populated.
+		ctrl.initialize();
+		
 		Scene scene = new Scene(topLevel);
 		primaryStage.setScene(scene);
+		primaryStage.setTitle("Xiangqi Editor");
 		primaryStage.show();
 	}
 

@@ -23,7 +23,7 @@ public class Game {
 	/**
 	 * Create a new game with no tags and no moves.
 	 */
-	private Game() {
+	public Game() {
 		tags = new ArrayList<>();
 		gameTree = new GameTree();
 	}

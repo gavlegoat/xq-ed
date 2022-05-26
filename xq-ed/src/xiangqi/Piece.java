@@ -195,4 +195,10 @@ public class Piece {
 		return 8 * colCode + code;
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+		Piece other = (Piece) obj;
+		return this.getType() == other.getType() && this.getColor() == other.getColor();
+	}
+	
 }

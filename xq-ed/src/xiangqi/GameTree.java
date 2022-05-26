@@ -43,6 +43,11 @@ public class GameTree {
 	private ArrayList<Pair<Move, GameTree>> variations;
 	
 	/**
+	 * The player who can move in this position.
+	 */
+	private Piece.Color playerToMove;
+	
+	/**
 	 * Construct a new game tree with the starting position and no successors.
 	 */
 	public GameTree() {
@@ -52,6 +57,7 @@ public class GameTree {
 		setComment("");
 		mainContinuation = Optional.empty();
 		variations = new ArrayList<>();
+		playerToMove = Piece.Color.RED;
 	}
 	
 	/**
@@ -68,6 +74,7 @@ public class GameTree {
 		setComment("");
 		mainContinuation = Optional.empty();
 		variations = new ArrayList<>();
+		playerToMove = par.getPlayerToMove() == Piece.Color.RED ? Piece.Color.BLACK : Piece.Color.RED;
 	}
 	
 	/**
@@ -159,6 +166,10 @@ public class GameTree {
 		Position next = position.makeMove(move);
 		GameTree newNode = new GameTree(next, this, move);
 		variations.add(new Pair<>(move, newNode));
+	}
+
+	public Piece.Color getPlayerToMove() {
+		return playerToMove;
 	}
 	
 }

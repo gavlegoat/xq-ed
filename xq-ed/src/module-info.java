@@ -5,5 +5,5 @@ module xq_ed {
 	requires javafx.controls;
 	requires javafx.base;
 	
-	exports gui;
+	exports main;
 }
