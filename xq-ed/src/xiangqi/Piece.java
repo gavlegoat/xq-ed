@@ -24,6 +24,15 @@ public class Piece {
 		RED, BLACK
 	}
 	
+	public static Piece.Color switchColor(Piece.Color color) {
+		switch (color) {
+		case RED:
+			return Piece.Color.BLACK;
+		default:
+			return Piece.Color.RED;
+		}
+	}
+	
 	/** The color of this piece. */
 	private Color color;
 	/** The type of this piece. */

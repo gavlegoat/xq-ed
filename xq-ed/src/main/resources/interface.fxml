@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 
@@ -46,15 +47,19 @@
           </HBox>
         </bottom>
         <right>
-          <MovePane fx:id="movePane"/>
+          <ScrollPane>
+          	<content><MovePane fx:id="movePane"/></content>
+          </ScrollPane>
         </right>
       </BorderPane>
-      <VBox>
-        <Label text="Comment"/>
-        <TextArea fx:id="commentArea"
-                  wrapText="true"
-                  onKeyTyped="#updateComment"/>
-      </VBox>
+      <BorderPane>
+        <top><Label text="Comment"/></top>
+        <center>
+          <TextArea fx:id="commentArea"
+                    wrapText="true"
+                    onKeyTyped="#updateComment"/>
+        </center>
+      </BorderPane>
     </SplitPane>
     <SplitPane>
       <Label text="Graph"/>

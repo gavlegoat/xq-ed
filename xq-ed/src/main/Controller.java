@@ -1,6 +1,8 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -10,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Pair;
+import main.MovePane.StringTree;
 import xiangqi.Game;
 import xiangqi.GameTree;
 import xiangqi.Move;
@@ -69,6 +72,50 @@ public class Controller {
 		boardPane.drawBoard(new Position());
 	}
 	
+	private StringTree traverseGameTree(GameTree root, Optional<StringTree> parent) {
+		StringTree cur = new StringTree();
+		if (root.hasMove()) {
+			String move = root.getMove().write(root.getParent().getPosition(),
+					Move.MoveFormat.RELATIVE);
+			cur.setCurrent(Optional.of(move));
+		}
+		ArrayList<StringTree> children = new ArrayList<>();
+		cur.setParent(parent);
+		for (GameTree ch : root.getVariations()) {
+			children.add(traverseGameTree(ch, Optional.of(cur)));
+		}
+		cur.setChildren(children);
+		return cur;
+	}
+	
+	/**
+	 * Get a tree of strings representing the current moves, suitable for
+	 * displaying in the move pane. Also returns the path from the root node to
+	 * the current node as a list of integers, where each element of the list
+	 * is an index into the children of the corresponding tree node.
+	 * @return A tree of move notation and a path to the current node.
+	 */
+	private Pair<StringTree, LinkedList<Integer>> getCurrentMoveNames() {
+		LinkedList<Integer> path = new LinkedList<>();
+		GameTree root = current;
+		GameTree pathNode = current;
+		while (root.hasParent()) {
+			root = root.getParent();
+			int index = 0;
+			for (GameTree ch : root.getVariations()) {
+				// ch is the same object as current, so we can compare with ==
+				if (ch == pathNode) {
+					path.addFirst(index);
+					pathNode = pathNode.getParent();
+					break;
+				}
+				index += 1;
+			}
+		}
+		StringTree names = traverseGameTree(root, Optional.empty());
+		return new Pair<>(names, path);
+	}
+	
 	/**
 	 * Update all of the relevant areas that change when the current position
 	 * changes.
@@ -76,6 +123,10 @@ public class Controller {
 	private void updateAll() {
 		boardPane.drawBoard(current.getPosition());
 		commentArea.setText(current.getComment());
+		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
+		StringTree moveNames = p.getKey();
+		LinkedList<Integer> path = p.getValue();
+		movePane.redraw(moveNames, path);
 	}
 	
 	/**
@@ -106,7 +157,7 @@ public class Controller {
 	@FXML
 	public void goForward() {
 		if (current.hasContinuation()) {
-			current = current.getMainContinuation().getValue();
+			current = current.getMainContinuation();
 		}
 		updateAll();
 	}
@@ -117,7 +168,7 @@ public class Controller {
 	@FXML
 	public void goToEnd() {
 		while (current.hasContinuation()) {
-			current = current.getMainContinuation().getValue();
+			current = current.getMainContinuation();
 		}
 		updateAll();
 	}
@@ -139,7 +190,7 @@ public class Controller {
 		newPos.clearPiece(m.getFromSquare().getKey(), m.getFromSquare().getValue());
 		newPos.setPiece(m.getToSquare().getKey(), m.getToSquare().getValue(), m.getPiece());
 		GameTree newNode = new GameTree(newPos, current, m);
-		current.addVariation(m, newNode);
+		current.addVariation(newNode);
 		current = newNode;
 	}
 	

@@ -24,7 +24,7 @@ public class GameTree {
 	private String comment;
 	
 	/** Moves from the position. The first entry is the main continuation. */
-	private ArrayList<Pair<Move, GameTree>> variations;
+	private ArrayList<GameTree> variations;
 	
 	/** The player who can move in this position. */
 	private Piece.Color playerToMove;
@@ -122,9 +122,8 @@ public class GameTree {
 	 * hasMainContinuation() because it throws an error if the main continuation
 	 * is empty.
 	 * @return The main continuation from this node.
-	 * @throws NoSuchElementException If there is no main continuation.
 	 */
-	public Pair<Move, GameTree> getMainContinuation() {
+	public GameTree getMainContinuation() {
 		return variations.get(0);
 	}
 	
@@ -132,8 +131,8 @@ public class GameTree {
 	 * Add a variation to this node.
 	 * @param move The move to add as a variation.
 	 */
-	public void addVariation(Move move, GameTree newNode) {
-		variations.add(new Pair<>(move, newNode));
+	public void addVariation(GameTree newNode) {
+		variations.add(newNode);
 	}
 
 	/**
@@ -142,6 +141,18 @@ public class GameTree {
 	 */
 	public Piece.Color getPlayerToMove() {
 		return playerToMove;
+	}
+	
+	/**
+	 * Get all variations continuing from this position.
+	 * @return The variations from this position.
+	 */
+	public ArrayList<GameTree> getVariations() {
+		return variations;
+	}
+	
+	public boolean hasMove() {
+		return move.isPresent();
 	}
 	
 }

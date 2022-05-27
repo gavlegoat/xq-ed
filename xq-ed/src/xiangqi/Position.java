@@ -174,7 +174,7 @@ public class Position {
 	 * @param er The ending rank of the move.
 	 * @return True if the king is in check after the move.
 	 */
-	private boolean inCheck(Piece.Color color, int sf, int sr, int ef, int er) {
+	public boolean inCheck(Piece.Color color, int sf, int sr, int ef, int er) {
 		Piece captured = pieceAt(ef, er);
 		Piece moved = pieceAt(sf, sr);
 		clearPiece(sf, sr);
@@ -214,8 +214,6 @@ public class Position {
 				break;
 			}
 		}
-		setPiece(sf, sr, moved);
-		setPiece(ef, er, captured);
 		// Flying general
 		if (rkFile == bkFile) {
 			boolean seeEachOther = true;
@@ -229,6 +227,8 @@ public class Position {
 				check = true;
 			}
 		}
+		setPiece(sf, sr, moved);
+		setPiece(ef, er, captured);
 		return check;
 	}
 	
