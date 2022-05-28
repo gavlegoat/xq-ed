@@ -1,12 +1,10 @@
-package xiangqi;
+package main.java;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import javafx.util.Pair;
-import xiangqi.Piece.Color;
-import xiangqi.Piece.Type;
+import main.java.Piece.Color;
 
 /**
  * Represents a Xiangqi board position.
@@ -635,6 +633,252 @@ public class Position {
 	 */
 	public ArrayList<Pair<Integer, Integer>> getMovesFrom(int file, int rank) {
 		return getMovesFrom(file, rank, true);
+	}
+	
+	/**
+	 * Convert a string representation of a move to a Move object. The string
+	 * may be in any of the move formats (relative/WXF, algebraic, or UCCI), and
+	 * this method will attempt to figure out which format it is.
+	 * @param move A string representation of the move.
+	 * @param color The color whose turn it is.
+	 * @return The move represented by the given string
+	 * @throws An exception if the string does not represent a legal move.
+	 */
+	public Move interpretMove(String move, Piece.Color color) throws PGNException {
+		// All moves end with a number, so we will strip any non-numeric
+		// characters. These may be present as check or checkmate markers.
+		while (!Character.isDigit(move.charAt(move.length() - 1))) {
+			move = move.substring(0, move.length() - 1);
+		}
+		if (move.length() < 3) {
+			throw new PGNException("Unparsable move: " + move);
+		}
+		int startFile = -1;
+		int endFile = -1;
+		int startRank = -1;
+		int endRank = -1;
+		if (Character.isLowerCase(move.charAt(0))) {
+			// UCCI moves (and only UCCI moves) start with lower-case characters
+			if (move.charAt(0) < 'a' || move.charAt(0) > 'i') {
+				throw new PGNException("Unparsable move: " + move);
+			}
+			startFile = (int) (move.charAt(0) - 'a');
+			int index = 2;
+			if (move.charAt(1) == '1' && move.charAt(2) == '0') {
+				startRank = 0;
+				index = 3;
+			} else {
+				startRank = Character.getNumericValue(move.charAt(1));
+				if (startRank < 1) {
+					throw new PGNException("Unparsable move: " + move);
+				}
+				startRank = 10 - startRank;
+			}
+			if (move.charAt(index) < 'a' || move.charAt(index) > 'i') {
+				throw new PGNException("Unparsable move: " + move);
+			}
+			endFile = move.charAt(index) - 'a';
+			if (move.length() == index + 3) {
+				if (move.charAt(index + 1) != '1' || move.charAt(index + 2) != '0') {
+					throw new PGNException("Unparsable move: " + move);
+				}
+				endRank = 0;
+			} else {
+				endRank = Character.getNumericValue(move.charAt(index + 1));
+				if (endRank < 1) {
+					throw new PGNException("Unparsable move: " + move);
+				}
+				endRank = 10 - endRank;
+			}
+		} else {
+			Piece.Type pieceType;
+			if (!"PCRHEAK".contains(String(move.charAt(0)))) {
+				// This can happen in the WXF notation if there are pieces in tandem.
+				if (Character.isDigit(move.charAt(0))) {
+					// This only happens for pawns in tandem
+					pieceType = Piece.Type.PAWN;
+					int index = Character.getNumericValue(move.charAt(0));
+					if (index == 0) {
+						throw new PGNException("Unparsable move: " + move);
+					}
+					startFile = Character.getNumericValue(move.charAt(1)) - 1;
+					if (startFile < 0) {
+						throw new PGNException("Unparsable move: " + move);
+					}
+					int start = color == Piece.Color.RED ? 0 : 9;
+					int diff = color == Piece.Color.RED ? 1 : -1;
+					int i = 0;
+					boolean found = false;
+					for (int r = start; r += diff; r >= 0 && r < 10) {
+						if (pieceAt(startFile, r).equals(new Piece(Piece.Type.PAWN, color))) {
+							i++;
+							if (i == index) {
+								startRank = r;
+								found = true;
+								break;
+							}
+						}
+					}
+					if (!found) {
+						throw new PGNException("Unparsable move: " + move);
+					}
+				} else if (move.charAt(0) == '+' || move.charAt(0) == '-') {
+					pieceType = new Piece(move.charAt(1)).getType();
+					boolean foundOne = false;
+					boolean foundTwo = false;
+					for (int f = 0; f < 9; f++) {
+						for (int r = 0; r < 10; r++) {
+							if (pieceAt(f, r).equals(new Piece(pieceType, color))) {
+								startFile = f;
+								if (move.charAt(0) == '+' && color == Piece.Color.RED ||
+										move.charAt(0) == '-' && color == Piece.Color.BLACK) {
+									startRank = r;
+									foundTwo = true;
+									break;
+								} else if (foundOne) {
+									startRank = r;
+									foundTwo = true;
+									break;
+								} else {
+									foundOne = true;
+								}
+							}
+						}
+						if (foundTwo) {
+							break;
+						}
+					}
+					if (!foundTwo) {
+						throw new PGNException("Unparsable move: " + move);
+					}
+				} else {
+					throw new PGNException("Unparsable move: " + move);
+				}
+			} else {
+				pieceType = new Piece(move.charAt(0)).getType();
+				if ("+-=.".contains(String(move.charAt(2)))) {
+					// This is a WXF move
+					if (move.charAt(1) == '+' || move.charAt(1) == '+') {
+						// This is the same as the above case but with the
+						// first two characters transposed
+						boolean foundOne = false;
+						boolean foundTwo = false;
+						for (int f = 0; f < 9; f++) {
+							for (int r = 0; r < 10; r++) {
+								if (pieceAt(f, r).equals(new Piece(pieceType, color))) {
+									startFile = f;
+									if (move.charAt(1) == '+' && color == Piece.Color.RED ||
+											move.charAt(1) == '-' && color == Piece.Color.BLACK) {
+										startRank = r;
+										foundTwo = true;
+										break;
+									} else if (foundOne) {
+										startRank = r;
+										foundTwo = true;
+										break;
+									} else {
+										foundOne = true;
+									}
+								}
+							}
+							if (foundTwo) {
+								break;
+							}
+						}
+					} else if (Character.isDigit(move.charAt(1))) {
+						startFile = Character.getNumericValue(move.charAt(1)) - 1;
+						if (startFile < 0) {
+							throw new PGNException("Unparsable move: " + move);
+						}
+						boolean found = true;
+						for (int r = 0; r < 10; r++) {
+							if (pieceAt(startFile, r).equals(new Piece(pieceType, color))) {
+								if (found) {
+									throw new PGNException("Unparsable move: " + move);
+								} else {
+									found = true;
+									startRank = r;
+								}
+							}
+						}
+						if (!found) {
+							throw new PGNException("Unparsable move: " + move);
+						}
+					}
+				} else {
+					// This is an algebraic move
+					int index = -1;
+					if (Character.isDigit(move.charAt(move.length() - 2))) {
+						// This should only happen if a piece moved to the tenth rank.
+						if (move.charAt(move.length() - 2) != '1' ||
+								move.charAt(move.length() - 1) != '0') {
+							throw new PGNException("Unparsable move: " + move);
+						}
+						endRank = 0;
+						index = move.length() - 3;
+					} else {
+						endRank = Character.getNumericValue(move.charAt(move.length() - 1));
+						if (endRank < 1) {
+							throw new PGNException("Unparsable move: " + move);
+						}
+						endRank = 10 - endRank;
+						index = move.length() - 2;
+					}
+					if (move.charAt(index) < 'a' || move.charAt(index) > 'i') {
+						throw new PGNException("Unparsable move: " + move);
+					}
+					endFile = move.charAt(index) - 'a';
+					// Find the start square.
+					ArrayList<Pair<Integer, Integer>> start = new ArrayList<>();
+					for (int f = 0; f < 9; f++) {
+						for (int r = 0; r < 10; r++) {
+							if (pieceAt(f, r).getType() == pieceType) {
+								ArrayList<Pair<Integer, Integer>> tmp =
+										getMovesFrom(f, r);
+								for (Pair<Integer, Integer> p : tmp) {
+									if (endFile == p.getKey() && endRank = p.getValue()) {
+										start.add(p);
+									}
+								}
+							}
+						}
+					}
+					if (start.isEmpty()) {
+						throw new PGNException("Unparsable move: " + move);
+					} else if (start.size() > 1) {
+						// Figure out which of the potential starting moves is
+						// the correct one.
+						if (Character.isDigit(move.charAt(2))) {
+							startRank = Character.getNumericValue(move.charAt(2));
+							if (startRank < 1) {
+								throw new PGNException("Unparsable move: " + move);
+							}
+						} else {
+							if (move.charAt(2) < 'a' || move.charAt(2) > 'i') {
+								startFile = move.charAt(2) - 'a';
+							}
+						}
+						for (Pair<Integer, Integer> s : start) {
+							if (s.getKey() == startFile || s.getValue() == startRank) {
+								startFile = s.getKey();
+								startRank = s.getValue();
+								break;
+							}
+						}
+					} else {
+						startFile = start.get(0).getKey();
+						startRank = start.get(0).getValue();
+					}
+				}
+			}
+		}
+		ArrayList<Pair<Integer, Integer>> legal = getMovesFrom(startFile, startRank);
+		for (Pair<Integer, Integer> m : legal) {
+			if (endFile == m.getKey() && endRank == m.getValue()) {
+				return new Move(pieceAt(startFile, startRank), new Pair<>(startFile, startRank), m);
+			}
+		}
+		throw new PGNException("Illegal move: " + move);
 	}
 	
 }

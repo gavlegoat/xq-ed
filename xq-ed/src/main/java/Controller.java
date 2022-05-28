@@ -1,23 +1,29 @@
-package main;
+package main.java;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
 import javafx.util.Pair;
-import main.MovePane.StringTree;
-import xiangqi.Game;
-import xiangqi.GameTree;
-import xiangqi.Move;
-import xiangqi.Piece;
-import xiangqi.Position;
+import main.java.MovePane.StringTree;
 
 /**
  * The controller is responsible for communicating between GUI components and
@@ -25,6 +31,8 @@ import xiangqi.Position;
  * elements.
  */
 public class Controller {
+	
+	private Window topLevelWindow;
 
 	/** The game currently being displayed. */
 	private Game game;
@@ -50,8 +58,24 @@ public class Controller {
 	public TextArea commentArea;
 	/** The pane where the move list is displayed. */
 	public MovePane movePane;
+	/** The notation format to use when displaying moves. */
+	public Move.MoveFormat format;
 	/** The pane where the board is displayed. */
 	public BoardPane boardPane;
+	
+	/** The toggle group for the move format. */
+	public ToggleGroup moveFormatGroup;
+	/** The menu item for selecting WXF move format. */
+	public RadioMenuItem wxfToggle;
+	/** The menu item for selecting WXF move format. */
+	public RadioMenuItem algebraicToggle;
+	/** The menu item for selecting WXF move format. */
+	public RadioMenuItem ucciToggle;
+	
+	/** True if the game has been edited since it was last saved. */
+	private boolean gameChanged;
+	/** The filename of the current game if it exists. */
+	private Optional<File> gameFile;
 	
 	/**
 	 * Construct a new controller with a fresh game.
@@ -62,21 +86,27 @@ public class Controller {
 		movingPiece = false;
 		startFile = -1;
 		startRank = -1;
+		format = Move.MoveFormat.RELATIVE;
+		gameChanged = false;
+		gameFile = Optional.empty();
 	}
 	
 	/**
 	 * Called after the fields are populated to set everything up. This is
 	 * separated from the constructor to work nicely with FXML.
 	 */
-	public void initialize() {
+	public void initialize(Window topLevel) {
 		boardPane.drawBoard(new Position());
+		movePane.setController(this);
+		moveFormatGroup.selectToggle(wxfToggle);
+		topLevelWindow = topLevel;
 	}
 	
 	private StringTree traverseGameTree(GameTree root, Optional<StringTree> parent) {
 		StringTree cur = new StringTree();
 		if (root.hasMove()) {
 			String move = root.getMove().write(root.getParent().getPosition(),
-					Move.MoveFormat.RELATIVE);
+					format);
 			cur.setCurrent(Optional.of(move));
 		}
 		ArrayList<StringTree> children = new ArrayList<>();
@@ -174,11 +204,137 @@ public class Controller {
 	}
 	
 	/**
+	 * Show the user a dialog asking if they want to save the current file. This
+	 * is shown when the user opens a new file or quits while there are unsaved
+	 * changes to the current game.
+	 * @return true if the user wants to cancel the operation.
+	 */
+	public boolean showConfirmSaveDialog() {
+		Alert alert = new Alert(Alert.AlertType.WARNING,
+				"The current game has not been saved. Would you like to save it?");
+		ButtonType saveButton = new ButtonType("Save");
+		ButtonType discardButton = new ButtonType("Discard");
+		ButtonType cancelButton = new ButtonType("Cancel");
+		
+		alert.getButtonTypes().setAll(saveButton, discardButton, cancelButton);
+		
+		Optional<ButtonType> res = alert.showAndWait();
+		if (res.get() == saveButton) {
+			if (saveFile()) {
+				return false;
+			}
+			return true;
+		} else if (res.get() == cancelButton) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean getGameChanged() {
+		return gameChanged;
+	}
+	
+	/**
+	 * Open a new file.
+	 */
+	public void openFile() {
+		if (gameChanged) {
+			boolean cancel = showConfirmSaveDialog();
+			if (cancel) {
+				return;
+			}
+		}
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Open Game");
+		fc.getExtensionFilters().add(new ExtensionFilter("Games", "*.pgn"));
+		File chosen = fc.showOpenDialog(topLevelWindow);
+		if (chosen == null) {
+			return;
+		}
+		try {
+			game = new Game(Files.readString(chosen.toPath()));
+			gameChanged = false;
+			gameFile = Optional.of(chosen);
+		} catch (IOException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Could not open file " + chosen.toString());
+			a.showAndWait();
+		} catch (PGNException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Could not read PGN:\n" + e.getMessage());
+			a.showAndWait();
+		}
+	}
+	
+	/**
+	 * Save the game at the given filename.
+	 * @param filename The filename to save the game to.
+	 * @return true if the file was saved.
+	 */
+	private boolean saveFile(File filename) {
+		String pgn = "";
+		try {
+			pgn = game.toPGN();
+		} catch (PGNException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Could not write PGN:\n" + e.getMessage());
+			a.showAndWait();
+			return false;
+		}
+		try {
+			FileWriter writer = new FileWriter(filename);
+			writer.write(pgn);
+			writer.close();
+			gameChanged = false;
+			return true;
+		} catch (IOException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Could not open file " + filename + " for writing.");
+			a.showAndWait();
+		}
+		return false;
+	}
+	
+	/**
+	 * Save the current file.
+	 * @return true if the file was saved.
+	 */
+	public boolean saveFile() {
+		if (gameFile.isEmpty()) {
+			return saveFileAs();
+		} else {
+			return saveFile(gameFile.get());
+		}
+	}
+	
+	/**
+	 * Save the current file, but always open a dialog to choose a filename.
+	 * @return true if the file was saved.
+	 */
+	public boolean saveFileAs() {
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Save Game");
+		fc.getExtensionFilters().add(new ExtensionFilter("Games", "*.pgn"));
+		File chosen = fc.showSaveDialog(topLevelWindow);
+		if (chosen == null) {
+			return false;
+		}
+		gameFile = Optional.of(chosen);
+		return saveFile(chosen);
+	}
+	
+	/**
 	 * Ask the user to save if necessary then exit.
 	 */
 	@FXML
 	public void checkAndExit() {
-		Platform.exit();
+		boolean cancel = false;
+		if (gameChanged) {
+			cancel = showConfirmSaveDialog();
+		}
+		if (!cancel) {
+			Platform.exit();
+		}
 	}
 	
 	/**
@@ -186,6 +342,7 @@ public class Controller {
 	 * @param m The move to make.
 	 */
 	private void makeMove(Move m) {
+		gameChanged = true;
 		Position newPos = current.getPosition().clone();
 		newPos.clearPiece(m.getFromSquare().getKey(), m.getFromSquare().getValue());
 		newPos.setPiece(m.getToSquare().getKey(), m.getToSquare().getValue(), m.getPiece());
@@ -317,5 +474,39 @@ public class Controller {
 	@FXML
 	public void updateComment(KeyEvent e) {
 		current.setComment(commentArea.getText());
+		gameChanged = true;
+	}
+
+	/**
+	 * Set the move in the game state indicated by path as the current board
+	 * position.
+	 * @param path The path of the position in the game tree.
+	 */
+	public void goToMove(List<Integer> path) {
+		GameTree root = current;
+		while (root.hasParent()) {
+			root = root.getParent();
+		}
+		for (Integer i : path) {
+			root = root.getVariations().get(i);
+		}
+		current = root;
+		movingPiece = false;
+		updateAll();
+	}
+	
+	public void setFormatWXF() {
+		format = Move.MoveFormat.RELATIVE;
+		updateAll();
+	}
+	
+	public void setFormatAlgebraic() {
+		format = Move.MoveFormat.ALGEBRAIC;
+		updateAll();
+	}
+	
+	public void setFormatUCCI() {
+		format = Move.MoveFormat.UCCI;
+		updateAll();
 	}
 }

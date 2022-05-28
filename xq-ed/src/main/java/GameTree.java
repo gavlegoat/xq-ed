@@ -1,10 +1,8 @@
-package xiangqi;
+package main.java;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-
-import javafx.util.Pair;
 
 /**
  * A Xiangqi game with variations and comments.

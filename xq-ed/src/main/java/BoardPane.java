@@ -1,17 +1,13 @@
-package main;
+package main.java;
 
 import java.io.File;
-import java.net.URL;
 import java.util.List;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
-import xiangqi.Piece;
-import xiangqi.Position;
 
 /**
  * Displays the board and allows the user to make moves.

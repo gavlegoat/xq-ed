@@ -1,13 +1,15 @@
-package main;
+package main.java;
 
 import java.io.IOException;
 import java.net.URL;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /* High-level application layout:
  * +-----------+---+------------+
@@ -38,7 +40,18 @@ public class Main extends Application {
 		VBox topLevel = loader.<VBox>load();
 		
 		// Once FXML is loaded, the controller fields should be populated.
-		ctrl.initialize();
+		ctrl.initialize(primaryStage);
+		
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent e) {
+				if (ctrl.getGameChanged()) {
+					if (ctrl.showConfirmSaveDialog()) {
+						e.consume();
+					}
+				}
+			}
+		});
 		
 		Scene scene = new Scene(topLevel);
 		primaryStage.setScene(scene);

@@ -1,4 +1,4 @@
-package xiangqi;
+package main.java;
 
 import java.util.ArrayList;
 
@@ -21,30 +21,27 @@ public class Move {
 		RELATIVE
 	}
 	
+	/**
+	 * Convert a given coordinate to an algebraic string. For example, the top
+	 * right corner of the board is i10 and the central two points are e5 and
+	 * e6.
+	 * @param file The file of the point.
+	 * @param rank The rank of the point.
+	 * @return A string representation of the point.
+	 */
 	public static String pointToString(int file, int rank) {
 		char f = (char) ('a' + file);
 		return String.format("%c%d", f, 10 - rank);
 	}
 	
+	/**
+	 * Get a character representing a particular piece. This follows the WXF
+	 * standard.
+	 * @param p The piece to represent
+	 * @return A character representing the piece.
+	 */
 	public char getPieceCode(Piece p) {
-		switch (p.getType()) {
-		case PAWN:
-			return 'P';
-		case CANNON:
-			return 'C';
-		case ROOK:
-			return 'R';
-		case HORSE:
-			return 'H';
-		case ELEPHANT:
-			return 'E';
-		case ADVISOR:
-			return 'A';
-		case KING:
-			return 'K';
-		default:
-			return 'x';
-		}
+		return Character.toUpperCase(p.getCode());
 	}
 
 	/** The piece that moved. */
@@ -93,7 +90,7 @@ public class Move {
 	}
 	
 	/**
-	 * Get a string represention of this move.
+	 * Get a string representation of this move.
 	 * @param pos The position before this move is executed.
 	 * @param format The notation to use.
 	 * @return This move represented in the given format.
@@ -115,11 +112,12 @@ public class Move {
 			// Check if another piece of this kind could move to the end square
 			for (int f = 0; f < 9; f++) {
 				for (int r = 0; r < 10; r++) {
-					if (pos.pieceAt(f, r).equals(piece)) {
-						ArrayList<Pair<Integer, Integer>> moves = pos.getMovesFrom(f, r);
+					if ((f != fromSquare.getKey() || r != fromSquare.getValue()) &&
+							pos.pieceAt(f, r).equals(piece)) {
+						ArrayList<Pair<Integer, Integer>> moves = pos.getMovesFrom(f, r, false);
 						for (Pair<Integer, Integer> pt : moves) {
-							if (pt.getKey() == fromSquare.getKey() &&
-									pt.getValue() == fromSquare.getValue()) {
+							if (pt.getKey() == toSquare.getKey() &&
+									pt.getValue() == toSquare.getValue()) {
 								if (f == fromSquare.getKey()) {
 									clarification = String.format("%d", 10 - fromSquare.getValue());
 									break;
@@ -154,7 +152,7 @@ public class Move {
 			}
 			pos.setPiece(fromSquare.getKey(), fromSquare.getValue(), piece);
 			pos.setPiece(toSquare.getKey(), toSquare.getValue(), captured);
-			// Check for checks and checkmate
+			// Check for checks
 			boolean check = pos.inCheck(Piece.switchColor(piece.getColor()),
 				fromSquare.getKey(), fromSquare.getValue(),
 				toSquare.getKey(), toSquare.getValue());
@@ -204,6 +202,7 @@ public class Move {
 			if (piece.getColor() == Piece.Color.RED) {
 				rankChange *= -1;
 			}
+			// Search for pieces in tandem (on the same file).
 			ArrayList<Integer> duplicates = new ArrayList<>();
 			for (int r = 0; r < 10; r++) {
 				if (r != fromSquare.getValue() && pos.hasPieceAt(fromSquare.getKey(), r) &&
@@ -232,6 +231,8 @@ public class Move {
 					}
 				}
 			} else if (piece.getType() == Piece.Type.PAWN) {
+				// Pawns are handled specially because they are the only piece
+				// which can have three or more on a file.
 				// We need to figure out which pawn this is in the order.
 				int pawnsAhead = 0;
 				for (Integer r : duplicates) {

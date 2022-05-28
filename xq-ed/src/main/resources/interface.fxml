@@ -8,22 +8,47 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToggleGroup?>
 
-<?import main.BoardPane?>
-<?import main.MovePane?>
+<?import main.java.BoardPane?>
+<?import main.java.MovePane?>
 
 <VBox xmlns:fx="http://javafx.com/fxml">
+  <fx:define>
+    <ToggleGroup fx:id="moveFormatGroup"/>
+  </fx:define>
   <MenuBar>
     <menus>
     <Menu text="_File">
       <items>
-        <MenuItem text="_Open"/>
-        <MenuItem text="_Save"/>
-        <MenuItem text="Save _As"/>
+        <MenuItem text="_Open" onAction="#openFile"/>
+        <MenuItem text="_Save" onAction="#saveFile"/>
+        <MenuItem text="Save _As" onAction="#saveFileAs"/>
         <MenuItem text="_Quit" onAction="#checkAndExit"/>
+      </items>
+    </Menu>
+    <Menu text="_View">
+      <items>
+        <Menu text="_Move Format">
+          <items>
+            <RadioMenuItem text="_WXF"
+                           toggleGroup="$moveFormatGroup"
+                           onAction="#setFormatWXF"
+                           fx:id="wxfToggle"/>
+            <RadioMenuItem text="_Algebraic"
+                           toggleGroup="$moveFormatGroup"
+                           onAction="#setFormatAlgebraic"
+                           fx:id="algebraicToggle"/>
+            <RadioMenuItem text="_UCCI"
+                           toggleGroup="$moveFormatGroup"
+                           onAction="#setFormatUCCI"
+                           fx:id="ucciToggle"/>
+          </items>
+        </Menu>
       </items>
     </Menu>
     </menus>

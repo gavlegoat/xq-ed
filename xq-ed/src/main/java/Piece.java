@@ -1,4 +1,4 @@
-package xiangqi;
+package main.java;
 
 import java.text.ParseException;
 
@@ -198,6 +198,27 @@ public class Piece {
 		}
 		int colCode = color == Color.RED ? 1 : 0;
 		return 8 * colCode + code;
+	}
+	
+	public char getCode() {
+		switch (type) {
+		case PAWN:
+			return color == Color.RED ? 'p' : 'P';
+		case CANNON:
+			return color == Color.RED ? 'c' : 'C';
+		case ROOK:
+			return color == Color.RED ? 'r' : 'R';
+		case HORSE:
+			return color == Color.RED ? 'h' : 'H';
+		case ELEPHANT:
+			return color == Color.RED ? 'e' : 'E';
+		case ADVISOR:
+			return color == Color.RED ? 'a' : 'A';
+		case KING:
+			return color == Color.RED ? 'k' : 'K';
+		default:
+			return '-';
+		}
 	}
 	
 	@Override
