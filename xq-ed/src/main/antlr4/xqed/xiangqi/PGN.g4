@@ -19,11 +19,12 @@ elementSeq : (element | recursiveVariation)* ;
 element
   : moveNumber
   | sanMove
+  | comment
   ;
   
 moveNumber : INTEGER '.'? ;
 
-sanMove : SYMBOL ;
+sanMove : '.'+ | SYMBOL ;
 
 recursiveVariation : '(' elementSeq ')' ;
 
@@ -33,6 +34,11 @@ termination
   | '1/2-1/2'
   | '*'
   |
+  ;
+  
+comment
+  : LINE_COMMENT
+  | BRACE_COMMENT
   ;
   
 LINE_COMMENT : ';' ~[\r\n]* ;

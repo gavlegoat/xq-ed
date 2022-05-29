@@ -1,4 +1,4 @@
-package main.java;
+package xqed;
 
 import java.io.IOException;
 import java.net.URL;

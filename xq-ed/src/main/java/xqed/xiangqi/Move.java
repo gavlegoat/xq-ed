@@ -1,4 +1,4 @@
-package main.java;
+package xqed.xiangqi;
 
 import java.util.ArrayList;
 

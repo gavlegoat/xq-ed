@@ -14,8 +14,8 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ToggleGroup?>
 
-<?import main.java.BoardPane?>
-<?import main.java.MovePane?>
+<?import xqed.gui.BoardPane?>
+<?import xqed.gui.MovePane?>
 
 <VBox xmlns:fx="http://javafx.com/fxml">
   <fx:define>

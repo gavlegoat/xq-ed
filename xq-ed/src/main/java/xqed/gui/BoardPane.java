@@ -1,4 +1,4 @@
-package main.java;
+package xqed.gui;
 
 import java.io.File;
 import java.util.List;
@@ -8,6 +8,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
+
+import xqed.xiangqi.Piece;
+import xqed.xiangqi.Position;
 
 /**
  * Displays the board and allows the user to make moves.

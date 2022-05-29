@@ -1,4 +1,4 @@
-module xq_ed {
+module xqed {
 	requires java.base;
 	requires javafx.fxml;
 	requires javafx.graphics;
@@ -6,5 +6,7 @@ module xq_ed {
 	requires javafx.base;
 	requires org.antlr.antlr4.runtime;
 	
-	exports main.java;
+	exports xqed;
+	exports xqed.gui;
+	exports xqed.xiangqi;
 }

@@ -1,12 +1,16 @@
-package main.java;
+package xqed.xiangqi;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import javafx.util.Pair;
 
@@ -34,10 +38,24 @@ public class Game {
 	 * Initialize a game object from a PGN representation
 	 * @param pgn A PGN representing this game.
 	 */
-	public Game(String pgn) throws PGNException {
-		// TODO
+	public Game(String pgn) throws ParseException {
 		PGNLexer lexer = new PGNLexer(CharStreams.fromString(pgn));
 		PGNParser parser = new PGNParser(new CommonTokenStream(lexer));
+		ParseTree tree = parser.parse();
+		PGNGameListener listener = new PGNGameListener();
+		ParseTreeWalker.DEFAULT.walk(listener, tree);
+		
+		Optional<ParseException> error = listener.getError();
+		if (error.isPresent()) {
+			throw error.get();
+		}
+		Game g = listener.getGame();
+		tags = g.getTags();
+		gameTree = g.getGameTree();
+	}
+	
+	public HashMap<String, String> getTags() {
+		return tags;
 	}
 	
 	/**
@@ -101,7 +119,7 @@ public class Game {
 	 */
 	private void pgnRecurse(GameTree node, Move.MoveFormat format,
 			StringBuilder sb, int moveNumber, boolean newMove,
-			Piece.Color color, int indent) throws PGNException {
+			Piece.Color color, int indent) throws ParseException {
 		if (node.hasMove()) {
 			if (color == Piece.Color.RED || newMove) {
 				sb.append(moveNumber);
@@ -115,7 +133,7 @@ public class Game {
 			if (!node.getComment().isBlank()) {
 				sb.append("{");
 				if (node.getComment().contains("{") || node.getComment().contains("}")) {
-					throw new PGNException("PGN comments may not contain { or }");
+					throw new ParseException("PGN comments may not contain { or }", 0);
 				}
 				sb.append(node.getComment());
 				sb.append("} ");
@@ -150,7 +168,7 @@ public class Game {
 	 * @param format The format to use for storing moves.
 	 * @return A PGN representation of this game.
 	 */
-	public String toPGN(Move.MoveFormat format) throws PGNException {
+	public String toPGN(Move.MoveFormat format) throws ParseException {
 		StringBuilder sb = new StringBuilder();
 		for (Entry<String, String> tag : tags.entrySet()) {
 			sb.append("[");
@@ -176,7 +194,7 @@ public class Game {
 	 * Write this game in PGN format. This version uses the UCCI move format.
 	 * @return A string representation of this game in PGN format.
 	 */
-	public String toPGN() throws PGNException {
+	public String toPGN() throws ParseException {
 		return toPGN(Move.MoveFormat.UCCI);
 	}
 }

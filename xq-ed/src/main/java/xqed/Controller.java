@@ -1,9 +1,10 @@
-package main.java;
+package xqed;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +24,15 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
 import javafx.util.Pair;
-import main.java.MovePane.StringTree;
+
+import xqed.gui.BoardPane;
+import xqed.gui.MovePane;
+import xqed.gui.MovePane.StringTree;
+import xqed.xiangqi.Game;
+import xqed.xiangqi.GameTree;
+import xqed.xiangqi.Move;
+import xqed.xiangqi.Piece;
+import xqed.xiangqi.Position;
 
 /**
  * The controller is responsible for communicating between GUI components and
@@ -259,7 +268,7 @@ public class Controller {
 			Alert a = new Alert(Alert.AlertType.ERROR,
 					"Could not open file " + chosen.toString());
 			a.showAndWait();
-		} catch (PGNException e) {
+		} catch (ParseException e) {
 			Alert a = new Alert(Alert.AlertType.ERROR,
 					"Could not read PGN:\n" + e.getMessage());
 			a.showAndWait();
@@ -275,7 +284,7 @@ public class Controller {
 		String pgn = "";
 		try {
 			pgn = game.toPGN();
-		} catch (PGNException e) {
+		} catch (ParseException e) {
 			Alert a = new Alert(Alert.AlertType.ERROR,
 					"Could not write PGN:\n" + e.getMessage());
 			a.showAndWait();

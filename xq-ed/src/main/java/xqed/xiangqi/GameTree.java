@@ -1,4 +1,4 @@
-package main.java;
+package xqed.xiangqi;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
@@ -131,6 +131,16 @@ public class GameTree {
 	 */
 	public void addVariation(GameTree newNode) {
 		variations.add(newNode);
+	}
+	
+	/**
+	 * Move the last variation to the front. This is useful in the PGN parser
+	 * for maintaining the right order of variations.
+	 */
+	public void setLastVariationAsMain() {
+		GameTree lastVar = variations.get(variations.size() - 1);
+		variations.remove(variations.size() - 1);
+		variations.add(0, lastVar);
 	}
 
 	/**

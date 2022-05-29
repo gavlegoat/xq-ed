@@ -1,4 +1,4 @@
-package main.java;
+package xqed.gui;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,6 +14,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+
+import xqed.Controller;
+import xqed.xiangqi.Piece;
 
 /**
  * Holds the list of moves for the current game, and allows the user to click
