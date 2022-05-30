@@ -163,4 +163,26 @@ public class GameTree {
 		return move.isPresent();
 	}
 	
+	public void removeVariation(GameTree node) {
+		variations.remove(node);
+	}
+	
+	public void promoteVariation(GameTree node) {
+		int index = 0;
+		while (index < variations.size() && variations.get(index) != node) {
+			index += 1;
+		}
+		variations.remove(index);
+		variations.add(index - 1, node);
+	}
+	
+	public void promoteVariationToMain(GameTree node) {
+		int index = 0;
+		while (index < variations.size() && variations.get(index) != node) {
+			index += 1;
+		}
+		variations.remove(index);
+		variations.add(0, node);
+	}
+	
 }

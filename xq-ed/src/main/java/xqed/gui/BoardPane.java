@@ -82,6 +82,8 @@ public class BoardPane extends Canvas {
 	/** The y coordinate of a piece being dragged. */
 	private double movingY;
 	
+	private Position currentPos;
+	
 	/**
 	 * Create a new pane.
 	 */
@@ -98,17 +100,20 @@ public class BoardPane extends Canvas {
 		setMovingPiece(new Piece());
 		setMovingX(-1);
 		setMovingY(-1);
+		currentPos = null;
 	}
 	
 	/**
 	 * Draw a position on this board.
 	 */
 	public void drawBoard(Position pos) {
+		currentPos = pos;
 		GraphicsContext gc = getGraphicsContext2D();
 		int width = (int) getWidth();
-		int height = (int) getHeight();	
+		int height = (int) getHeight();
+		gc.clearRect(0, 0, width, height);
 		
-		double screenRatio = width / height;
+		double screenRatio = (double) width / height;
 
 		double bWidth;
 		double bHeight;
@@ -357,4 +362,46 @@ public class BoardPane extends Canvas {
 		this.movingY = movingY;
 	}
 	
+	@Override
+	public boolean isResizable() {
+		return true;
+	}
+	
+	@Override
+	public double minWidth(double height) {
+		return initialWidth / 2;
+	}
+	
+	@Override
+	public double minHeight(double width) {
+		return initialHeight / 2;
+	}
+	
+	@Override
+	public double prefWidth(double height) {
+		return initialWidth;
+	}
+	
+	@Override
+	public double prefHeight(double width) {
+		return initialHeight;
+	}
+	
+	@Override
+	public double maxWidth(double height) {
+		return Double.MAX_VALUE;
+	}
+	
+	@Override
+	public double maxHeight(double width) {
+		return Double.MAX_VALUE;
+	}
+	
+	@Override
+	public void resize(double width, double height) {
+		imagesNeedToBeReloaded = true;
+		if (currentPos != null) {
+			drawBoard(currentPos);
+		}
+	}
 }

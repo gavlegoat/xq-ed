@@ -120,6 +120,8 @@ public class Game {
 	private void pgnRecurse(GameTree node, Move.MoveFormat format,
 			StringBuilder sb, int moveNumber, boolean newMove,
 			Piece.Color color, int indent) throws ParseException {
+		// FIXME: This should write one move from the main line before
+		// variations
 		if (node.hasMove()) {
 			if (color == Piece.Color.RED || newMove) {
 				sb.append(moveNumber);
@@ -146,21 +148,25 @@ public class Game {
 		if (color == Piece.Color.BLACK) {
 			newMoveNumber++;
 		}
-		for (int i = 1; i < node.getVariations().size(); i++) {
-			sb.append("\n");
-			for (int j = 0; j <= indent; j++) {
-				sb.append("  ");
+		boolean newLine = false;
+		if (node.hasParent() && node == node.getParent().getMainContinuation()) {
+			for (int i = 1; i < node.getParent().getVariations().size(); i++) {
+				sb.append("\n");
+				for (int j = 0; j <= indent; j++) {
+					sb.append("  ");
+				}
+				sb.append("(");
+				pgnRecurse(node.getParent().getVariations().get(i), format, sb,
+						moveNumber, true, color, indent + 1);
+				sb.append(")");
 			}
-			sb.append("(");
-			pgnRecurse(node.getVariations().get(i), format, sb, newMoveNumber,
-					true, Piece.switchColor(color), indent + 1);
-			sb.append(")");
-		}
-		if (node.getVariations().size() > 1) {
-			sb.append("\n");
+			if (node.getParent().getVariations().size() > 1) {
+				sb.append("\n");
+				newLine = true;
+			}
 		}
 		pgnRecurse(node.getVariations().get(0), format, sb, newMoveNumber,
-				node.getVariations().size() > 1, Piece.switchColor(color), indent);
+				newLine, Piece.switchColor(color), indent);
 	}
 	
 	/**

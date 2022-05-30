@@ -31,20 +31,20 @@ public class PGNGameListener extends PGNBaseListener {
 		treePointer = game.getGameTree();
 	}
 	
-	private void promoteVariations(GameTree node) {
-		if (node.getVariations().isEmpty()) {
-			return;
-		}
-		node.setLastVariationAsMain();
-	}
-	
-	@Override
-	public void exitGame(PGNParser.GameContext ctx) {
-		// The way we handle variations leaves the main variation at the end.
-		// We solve that by promoting the last variation of each tree node here.
-		GameTree root = game.getGameTree();
-		promoteVariations(root);
-	}
+//	private void promoteVariations(GameTree node) {
+//		if (node.getVariations().isEmpty()) {
+//			return;
+//		}
+//		node.setLastVariationAsMain();
+//	}
+//	
+//	@Override
+//	public void exitGame(PGNParser.GameContext ctx) {
+//		// The way we handle variations leaves the main variation at the end.
+//		// We solve that by promoting the last variation of each tree node here.
+//		GameTree root = game.getGameTree();
+//		promoteVariations(root);
+//	}
 	
 	@Override
 	public void exitTag(PGNParser.TagContext ctx) {
@@ -59,14 +59,6 @@ public class PGNGameListener extends PGNBaseListener {
 		value = value.replace("\\\"", "\"");
 		value = value.replace("\\\\", "\\");
 		game.addTag(name, value);
-	}
-	
-	@Override
-	public void enterElementSeq(PGNParser.ElementSeqContext ctx) {
-		if (pgnError.isPresent()) {
-			return;
-		}
-		treePointer = game.getGameTree();
 	}
 	
 	@Override
@@ -109,6 +101,9 @@ public class PGNGameListener extends PGNBaseListener {
 			return;
 		}
 		variationStack.push(treePointer);
+		// The PGN notation has one move from the main line followed by
+		// variations, so we need to back up the current node pointer once.
+		treePointer = treePointer.getParent();
 	}
 	
 	@Override

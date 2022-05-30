@@ -1022,4 +1022,30 @@ public class Position {
 		throw new ParseException("Illegal move: " + move, 0);
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (int r = 0; r < 10; r++) {
+			int skip = 0;
+			for (int f = 0; f < 9; f++) {
+				if (hasPieceAt(f, r)) {
+					if (skip > 0) {
+						sb.append(skip);
+						skip = 0;
+					}
+					sb.append(pieceAt(f, r).getCode());
+				} else {
+					skip++;
+				}
+			}
+			if (skip > 0) {
+				sb.append(skip);
+			}
+			if (r < 9) {
+				sb.append('/');
+			}
+		}
+		return sb.toString();
+	}
+	
 }

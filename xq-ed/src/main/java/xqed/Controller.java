@@ -20,6 +20,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
@@ -71,6 +72,7 @@ public class Controller {
 	public Move.MoveFormat format;
 	/** The pane where the board is displayed. */
 	public BoardPane boardPane;
+	public Pane boardParent;
 	
 	/** The toggle group for the move format. */
 	public ToggleGroup moveFormatGroup;
@@ -109,6 +111,9 @@ public class Controller {
 		movePane.setController(this);
 		moveFormatGroup.selectToggle(wxfToggle);
 		topLevelWindow = topLevel;
+
+		boardPane.widthProperty().bind(boardParent.widthProperty());
+		boardPane.heightProperty().bind(boardParent.heightProperty());
 	}
 	
 	private StringTree traverseGameTree(GameTree root, Optional<StringTree> parent) {
@@ -155,6 +160,13 @@ public class Controller {
 		return new Pair<>(names, path);
 	}
 	
+	private void updateMoves() {
+		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
+		StringTree moveNames = p.getKey();
+		LinkedList<Integer> path = p.getValue();
+		movePane.redraw(moveNames, path);
+	}
+	
 	/**
 	 * Update all of the relevant areas that change when the current position
 	 * changes.
@@ -162,10 +174,7 @@ public class Controller {
 	private void updateAll() {
 		boardPane.drawBoard(current.getPosition());
 		commentArea.setText(current.getComment());
-		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
-		StringTree moveNames = p.getKey();
-		LinkedList<Integer> path = p.getValue();
-		movePane.redraw(moveNames, path);
+		updateMoves();
 	}
 	
 	/**
@@ -264,6 +273,8 @@ public class Controller {
 			game = new Game(Files.readString(chosen.toPath()));
 			gameChanged = false;
 			gameFile = Optional.of(chosen);
+			current = game.getGameTree();
+			updateAll();
 		} catch (IOException e) {
 			Alert a = new Alert(Alert.AlertType.ERROR,
 					"Could not open file " + chosen.toString());
@@ -506,16 +517,47 @@ public class Controller {
 	
 	public void setFormatWXF() {
 		format = Move.MoveFormat.RELATIVE;
-		updateAll();
+		updateMoves();
 	}
 	
 	public void setFormatAlgebraic() {
 		format = Move.MoveFormat.ALGEBRAIC;
-		updateAll();
+		updateMoves();
 	}
 	
 	public void setFormatUCCI() {
 		format = Move.MoveFormat.UCCI;
-		updateAll();
+		updateMoves();
+	}
+	
+	public void deleteVariation() {
+		if (!current.hasParent()) {
+			return;
+		}
+		GameTree node = current.getParent();
+		node.removeVariation(current);
+		current = node;
+		gameChanged = true;
+		updateMoves();
+	}
+	
+	public void promoteVariation() {
+		if (!current.hasParent()) {
+			return;
+		}
+		GameTree node = current.getParent();
+		node.promoteVariation(current);
+		gameChanged = true;
+		updateMoves();
+	}
+	
+	public void makeMainLine() {
+		if (!current.hasParent()) {
+			return;
+		}
+		GameTree node = current.getParent();
+		node.promoteVariationToMain(current);
+		gameChanged = true;
+		updateMoves();
 	}
 }

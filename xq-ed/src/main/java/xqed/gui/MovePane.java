@@ -143,6 +143,7 @@ public class MovePane extends Pane {
 	private int numWidth;
 	/** The font size to use for moves. */
 	private double fontSize;
+	private int initialIndent;
 	
 	/** The controller interacting with this move list. */
 	private Controller controller;
@@ -153,10 +154,11 @@ public class MovePane extends Pane {
 	public MovePane() {
 		mainPane = new VBox();
 		getChildren().add(mainPane);
+		initialIndent = 20;
 		indentSize = 15;
 		moveWidth = 60;
 		moveHeight = 20;
-		numWidth = 40;
+		numWidth = 20;
 		fontSize = 18;
 		
 		// Set the desired width of this move pane.
@@ -201,7 +203,7 @@ public class MovePane extends Pane {
 				}
 				row = new HBox();
 				// Add indentation to the new row.
-				int x = 5;
+				int x = initialIndent;
 				for (int i = 0; i < indentLevel - 1; i++) {
 					x += indentSize;
 				}
@@ -215,8 +217,10 @@ public class MovePane extends Pane {
 				if (newIndent) {
 					// If this is a new indent, we need to add a marker.
 					Label marker = new Label(">");
+					marker.setFont(Font.font(fontSize));
 					marker.setPrefWidth(indentSize);
 					marker.setPrefHeight(moveHeight);
+					marker.setAlignment(Pos.BASELINE_RIGHT);
 					row.getChildren().add(marker);
 				}
 				
@@ -225,7 +229,6 @@ public class MovePane extends Pane {
 				number.setFont(Font.font(fontSize));
 				number.setPrefWidth(numWidth);
 				number.setPrefHeight(moveHeight);
-				number.setAlignment(Pos.BASELINE_RIGHT);
 				row.getChildren().add(number);
 				
 				// If this is a new row and the color is black, then that means
@@ -241,7 +244,7 @@ public class MovePane extends Pane {
 			} else {
 				// If the above doesn't apply, then this is a black move without
 				// a variation on the previous move, so we should put it on the
-				// samke row as the previous move.
+				// same row as the previous move.
 				row = prevRow.get();
 			}
 			// Check whether the path of this node is equal to the path of the
@@ -287,23 +290,32 @@ public class MovePane extends Pane {
 				mainPane.getChildren().add(row);
 			}
 		} else {
-			// Loop starting from one so that we print variations first.
-			for (int i = 1; i < node.getChildren().size(); i++) {
-				// Variations always start on a new row, so we can add this row
-				// and pass an empty optional down.
-				if (row != null) {
-					mainPane.getChildren().add(row);
+			boolean useRow = true;
+			if (node.getParent().isPresent() && node == node.getParent().get().getChildren().get(0)) {
+				// We draw parent node variations in order to write the first move
+				// of the main line first.
+				StringTree par = node.getParent().get();
+				useRow = par.getChildren().size() == 1;
+				int pathEnd = path.removeLast();
+				// Loop starting from one so that we print variations first.
+				for (int i = 1; i < par.getChildren().size(); i++) {
+					// Variations always start on a new row, so we can add this row
+					// and pass an empty optional down.
+					if (row != null) {
+						mainPane.getChildren().add(row);
+					}
+					// Update the path
+					path.addLast(i);
+					drawRecurse(par.getChildren().get(i), path, currentPath,
+							indentLevel + 1, moveNumber, color,
+							Optional.empty(), true);
+					// Un-update the path for future iterations
+					path.removeLast();
 				}
-				// Update the path
-				path.addLast(i);
-				drawRecurse(node.getChildren().get(i), path, currentPath,
-						indentLevel + 1, nextMove, Piece.switchColor(color),
-						Optional.empty(), true);
-				// Un-update the path for future iterations
-				path.removeLast();
+				path.addLast(pathEnd);
 			}
 			path.addLast(0);
-			if (node.getChildren().size() == 1) {
+			if (useRow) {
 				// If we didn't draw any variations, then we can just continue
 				// as normal.
 				drawRecurse(node.getChildren().get(0), path, currentPath,
