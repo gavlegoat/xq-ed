@@ -286,4 +286,14 @@ public class Move {
 		return 90 * 90 * pieceIndex + 90 * fromSqHash + toSqHash;
 	}
 	
+	@Override
+	public boolean equals(Object other) {
+		return hashCode() == other.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return write(null, MoveFormat.UCCI);
+	}
+	
 }
