@@ -11,6 +11,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.RadioMenuItem?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ToggleGroup?>
@@ -34,9 +35,11 @@
     </Menu>
     <Menu text="_Edit">
       <items>
-        <MenuItem text="_Delete Variation" onAction="#deleteVariation"/>
+        <MenuItem text="_Delete Variation from Here" onAction="#deleteVariation"/>
         <MenuItem text="_Promote Variation" onAction="#promoteVariation"/>
         <MenuItem text="Promote Variation to _Main Line" onAction="#makeMainLine"/>
+        <SeparatorMenuItem/>
+        <MenuItem text="Edit _Tags" onAction="#editTags"/>
       </items>
     </Menu>
     <Menu text="_View">

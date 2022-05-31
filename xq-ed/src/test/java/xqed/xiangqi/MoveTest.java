@@ -127,7 +127,7 @@ class MoveTest {
 		
 		// Checks
 		Move check = new Move(new Piece(Piece.Color.BLACK, Piece.Type.ROOK),
-				new Pair<>(0, 7), new Pair(0, 9));
+				new Pair<>(0, 7), new Pair<>(0, 9));
 		assertEquals(check.write(testPos, Move.MoveFormat.ALGEBRAIC), "Ra1+",
 				"Checks are indicted with +");
 		

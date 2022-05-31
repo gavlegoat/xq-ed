@@ -82,6 +82,7 @@ public class BoardPane extends Canvas {
 	/** The y coordinate of a piece being dragged. */
 	private double movingY;
 	
+	/** The currently draw position. */
 	private Position currentPos;
 	
 	/**
@@ -362,41 +363,17 @@ public class BoardPane extends Canvas {
 		this.movingY = movingY;
 	}
 	
+	/**
+	 * Make this canvas resizable.
+	 */
 	@Override
 	public boolean isResizable() {
 		return true;
 	}
 	
-	@Override
-	public double minWidth(double height) {
-		return initialWidth / 2;
-	}
-	
-	@Override
-	public double minHeight(double width) {
-		return initialHeight / 2;
-	}
-	
-	@Override
-	public double prefWidth(double height) {
-		return initialWidth;
-	}
-	
-	@Override
-	public double prefHeight(double width) {
-		return initialHeight;
-	}
-	
-	@Override
-	public double maxWidth(double height) {
-		return Double.MAX_VALUE;
-	}
-	
-	@Override
-	public double maxHeight(double width) {
-		return Double.MAX_VALUE;
-	}
-	
+	/**
+	 * When the canvas is resized, redraw it.
+	 */
 	@Override
 	public void resize(double width, double height) {
 		imagesNeedToBeReloaded = true;

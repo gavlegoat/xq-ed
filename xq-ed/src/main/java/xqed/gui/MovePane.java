@@ -7,7 +7,10 @@ import java.util.Optional;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -143,6 +146,7 @@ public class MovePane extends Pane {
 	private int numWidth;
 	/** The font size to use for moves. */
 	private double fontSize;
+	/** The size of the left border of the move pane. */
 	private int initialIndent;
 	
 	/** The controller interacting with this move list. */
@@ -270,10 +274,25 @@ public class MovePane extends Pane {
 			// actually a safe cast.
 			@SuppressWarnings("unchecked")
 			LinkedList<Integer> capturedPath = (LinkedList<Integer>) path.clone();
+			// Set up a context menu to delete or promote this move.
+			ContextMenu menu = new ContextMenu();
+			MenuItem delete = new MenuItem("Delete Variation from Here");
+			delete.setOnAction(evt -> controller.deleteVariation(capturedPath));
+			MenuItem promote = new MenuItem("Promote Variation");
+			promote.setOnAction(evt -> controller.promoteVariation(capturedPath));
+			MenuItem main = new MenuItem("Make Main Line");
+			main.setOnAction(evt -> controller.makeMainLine(capturedPath));
+			menu.getItems().addAll(delete, promote, main);
+			move.setContextMenu(menu);
+			MovePane thisPane = this;
 			move.setOnMouseClicked(new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent e) {
-					controller.goToMove(capturedPath);
+					if (e.getButton() == MouseButton.PRIMARY) {
+						controller.goToMove(capturedPath);
+					} else if (e.getButton() == MouseButton.SECONDARY) {
+						menu.show(thisPane, e.getX(), e.getY());
+					}
 				}
 			});
 			row.getChildren().add(move);

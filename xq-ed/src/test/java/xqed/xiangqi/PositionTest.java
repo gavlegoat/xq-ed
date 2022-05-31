@@ -181,7 +181,7 @@ class PositionTest {
 			fail(e.getMessage());
 		}
 		assertEquals(m, new Move(new Piece(Piece.Color.RED, Piece.Type.ELEPHANT),
-				new Pair<>(2, 9), new Pair(4, 7)));
+				new Pair<>(2, 9), new Pair<>(4, 7)));
 		
 		// Advisor
 		try {
@@ -190,7 +190,7 @@ class PositionTest {
 			fail(e.getMessage());
 		}
 		assertEquals(m, new Move(new Piece(Piece.Color.BLACK, Piece.Type.ADVISOR),
-				new Pair<>(5, 0), new Pair(4, 1)));
+				new Pair<>(5, 0), new Pair<>(4, 1)));
 		
 		// King
 		try {

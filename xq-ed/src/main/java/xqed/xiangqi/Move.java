@@ -40,7 +40,7 @@ public class Move {
 	 * @param p The piece to represent
 	 * @return A character representing the piece.
 	 */
-	public char getPieceCode(Piece p) {
+	public static char getPieceCode(Piece p) {
 		return Character.toUpperCase(p.getCode());
 	}
 

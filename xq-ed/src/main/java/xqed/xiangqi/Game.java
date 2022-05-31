@@ -1,7 +1,6 @@
 package xqed.xiangqi;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -12,13 +11,16 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import javafx.util.Pair;
-
 /**
  * A Xiangqi game including the game tree and metadata.
  */
 public class Game {
 
+	public final static String[] possiblePGNTags = {
+			"Event", "Site", "Date", "Round", "Red", "Black", "Result",
+			"TimeControl", "Termination"
+	};
+	
 	/** The tags for this game. */
 	private HashMap<String, String> tags;
 	
@@ -54,6 +56,10 @@ public class Game {
 		gameTree = g.getGameTree();
 	}
 	
+	/**
+	 * Get the tags associated with this game.
+	 * @return This game's tags.
+	 */
 	public HashMap<String, String> getTags() {
 		return tags;
 	}
@@ -188,9 +194,9 @@ public class Game {
 			root = root.getParent();
 		}
 		pgnRecurse(root, format, sb, 0, true, Piece.Color.BLACK, 0);
-		if (hasTag("Termination")) {
+		if (hasTag("Result")) {
 			sb.append("\n");
-			sb.append(lookupTag("Termination"));
+			sb.append(lookupTag("Result"));
 		}
 		sb.append("\n");
 		return sb.toString();
@@ -202,5 +208,11 @@ public class Game {
 	 */
 	public String toPGN() throws ParseException {
 		return toPGN(Move.MoveFormat.UCCI);
+	}
+	
+	public void clearTag(String key) {
+		if (tags.containsKey(key)) {
+			tags.remove(key);
+		}
 	}
 }

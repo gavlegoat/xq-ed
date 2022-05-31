@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseDragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -29,6 +31,7 @@ import javafx.util.Pair;
 import xqed.gui.BoardPane;
 import xqed.gui.MovePane;
 import xqed.gui.MovePane.StringTree;
+import xqed.gui.TagStage;
 import xqed.xiangqi.Game;
 import xqed.xiangqi.GameTree;
 import xqed.xiangqi.Move;
@@ -42,6 +45,7 @@ import xqed.xiangqi.Position;
  */
 public class Controller {
 	
+	/** The container for the entire editor. */
 	private Window topLevelWindow;
 
 	/** The game currently being displayed. */
@@ -116,6 +120,12 @@ public class Controller {
 		boardPane.heightProperty().bind(boardParent.heightProperty());
 	}
 	
+	/**
+	 * Convert the game tree to a tree of move names for displaying.
+	 * @param root The current game tree node.
+	 * @param parent The parent in the string tree.
+	 * @return A tree of strings representing the moves of this game.
+	 */
 	private StringTree traverseGameTree(GameTree root, Optional<StringTree> parent) {
 		StringTree cur = new StringTree();
 		if (root.hasMove()) {
@@ -160,6 +170,9 @@ public class Controller {
 		return new Pair<>(names, path);
 	}
 	
+	/**
+	 * Redraw the move pane.
+	 */
 	private void updateMoves() {
 		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
 		StringTree moveNames = p.getKey();
@@ -248,6 +261,10 @@ public class Controller {
 		return false;
 	}
 	
+	/**
+	 * Determine whether the game has changed since it was last saved.
+	 * @return True if the game has been edited.
+	 */
 	public boolean getGameChanged() {
 		return gameChanged;
 	}
@@ -377,6 +394,9 @@ public class Controller {
 	 */
 	@FXML
 	public void handleClick(MouseEvent e) {
+		if (e.getButton() != MouseButton.PRIMARY) {
+			return;
+		}
 		Pair<Integer, Integer> square = boardPane.getSquareFromPixels(e.getX(), e.getY());
 		int file = square.getKey();
 		int rank = square.getValue();
@@ -515,21 +535,47 @@ public class Controller {
 		updateAll();
 	}
 	
+	/**
+	 * Change the move display format to WXF/relative.
+	 */
 	public void setFormatWXF() {
 		format = Move.MoveFormat.RELATIVE;
 		updateMoves();
 	}
 	
+	/**
+	 * Change the move display format to algebraic.
+	 */
 	public void setFormatAlgebraic() {
 		format = Move.MoveFormat.ALGEBRAIC;
 		updateMoves();
 	}
 	
+	/**
+	 * Change the move display format to UCCI.
+	 */
 	public void setFormatUCCI() {
 		format = Move.MoveFormat.UCCI;
 		updateMoves();
 	}
 	
+	/**
+	 * Set the node at the given path as the current node.
+	 * @param path The path to the desired node.
+	 */
+	private void setNode(LinkedList<Integer> path) {
+		while (current.hasParent()) {
+			current = current.getParent();
+		}
+		for (Integer i : path) {
+			current = current.getVariations().get(i);
+		}
+	}
+	
+	/**
+	 * Delete the tree rooted at the current node.
+	 */
+	@FXML
 	public void deleteVariation() {
 		if (!current.hasParent()) {
 			return;
@@ -538,9 +584,24 @@ public class Controller {
 		node.removeVariation(current);
 		current = node;
 		gameChanged = true;
+		updateAll();
+	}
+	
+	/**
+	 * Delete the tree rooted at the given path.
+	 * @param path The path to the subtree to delete.
+	 */
+	public void deleteVariation(LinkedList<Integer> path) {
+		GameTree node = current;
+		setNode(path);
+		deleteVariation();
+		current = node;
 		updateMoves();
 	}
 	
+	/**
+	 * Promote the subtree rooted at the current node.
+	 */
 	public void promoteVariation() {
 		if (!current.hasParent()) {
 			return;
@@ -551,6 +612,21 @@ public class Controller {
 		updateMoves();
 	}
 	
+	/**
+	 * Promote the subtree rooted at the given path.
+	 * @param path The path to the subtree to promote.
+	 */
+	public void promoteVariation(LinkedList<Integer> path) {
+		GameTree node = current;
+		setNode(path);
+		promoteVariation();
+		current = node;
+		updateMoves();
+	}
+	
+	/**
+	 * Make the subtree at the current node the main line (w.r.t. it's parent).
+	 */
 	public void makeMainLine() {
 		if (!current.hasParent()) {
 			return;
@@ -559,5 +635,35 @@ public class Controller {
 		node.promoteVariationToMain(current);
 		gameChanged = true;
 		updateMoves();
+	}
+	
+	/**
+	 * Make the subtree at the given path the main line (w.r.t. it's parent).
+	 * @param path The path to the subtree to promote.
+	 */
+	public void makeMainLine(LinkedList<Integer> path) {
+		GameTree node = current;
+		setNode(path);
+		makeMainLine();
+		current = node;
+		updateMoves();
+	}
+	
+	/**
+	 * Open a dialog for the user to edit the tags of the game.
+	 */
+	public void editTags() {
+		TagStage stage = new TagStage(this, game.getTags());
+		stage.showAndWait();
+	}
+	
+	public void updateTags(HashMap<String, String> values) {
+		for (String s : Game.possiblePGNTags) {
+			if (values.containsKey(s)) {
+				game.addTag(s, values.get(s));
+			} else {
+				game.clearTag(s);
+			}
+		}
 	}
 }

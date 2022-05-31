@@ -24,6 +24,11 @@ public class Piece {
 		RED, BLACK
 	}
 	
+	/**
+	 * Get the color of the other player.
+	 * @param color The color to switch.
+	 * @return The opposite color.
+	 */
 	public static Piece.Color switchColor(Piece.Color color) {
 		switch (color) {
 		case RED:
@@ -200,6 +205,10 @@ public class Piece {
 		return 8 * colCode + code;
 	}
 	
+	/**
+	 * Get the FEN representation of the current piece.
+	 * @return A character representing this piece.
+	 */
 	public char getCode() {
 		switch (type) {
 		case PAWN:

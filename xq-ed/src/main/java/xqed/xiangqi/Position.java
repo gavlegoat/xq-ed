@@ -637,6 +637,13 @@ public class Position {
 		return getMovesFrom(file, rank, true);
 	}
 	
+	/**
+	 * Parse a string in UCCI format.
+	 * @param move The move to parse.
+	 * @param color The player who made the move.
+	 * @return The move represented by the given string.
+	 * @throws ParseException If the given string is malformed.
+	 */
 	private Move interpretMoveUCCI(String move, Piece.Color color) throws ParseException {
 		int startFile = -1;
 		int endFile = -1;
@@ -680,6 +687,13 @@ public class Position {
 				new Pair<>(startFile, startRank), new Pair<>(endFile, endRank));
 	}
 	
+	/**
+	 * Parse a string in algebraic format.
+	 * @param move The move to parse.
+	 * @param color The player who made the move.
+	 * @return The move represented by the given string.
+	 * @throws ParseException If the given string is malformed.
+	 */
 	private Move interpretMoveAlgebraic(String move, Piece.Color color) throws ParseException {
 		int startFile = -1;
 		int endFile = -1;
@@ -751,6 +765,13 @@ public class Position {
 				new Pair<>(startFile, startRank), new Pair<>(endFile, endRank));
 	}
 	
+	/**
+	 * Parse a string in WXF/relative format.
+	 * @param move The move to parse.
+	 * @param color The player who made the move.
+	 * @return The move represented by the given string.
+	 * @throws ParseException If the given string is malformed.
+	 */
 	private Move interpretMoveRelative(String move, Piece.Color color) throws ParseException {
 		int startFile = -1;
 		int startRank = -1;

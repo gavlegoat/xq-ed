@@ -159,14 +159,27 @@ public class GameTree {
 		return variations;
 	}
 	
+	/**
+	 * Determine whether this position was the result of a move. This should
+	 * only be false for the root node of a game.
+	 * @return True if this node has a move.
+	 */
 	public boolean hasMove() {
 		return move.isPresent();
 	}
 	
+	/**
+	 * Remove the given child from this node.
+	 * @param node The node to remove.
+	 */
 	public void removeVariation(GameTree node) {
 		variations.remove(node);
 	}
 	
+	/**
+	 * Move the given node up in the variations list of it's parent.
+	 * @param node The node to promote.
+	 */
 	public void promoteVariation(GameTree node) {
 		int index = 0;
 		while (index < variations.size() && variations.get(index) != node) {
@@ -176,6 +189,10 @@ public class GameTree {
 		variations.add(index - 1, node);
 	}
 	
+	/**
+	 * Set the given node as the main successor to it's parent.
+	 * @param node The node to promote.
+	 */
 	public void promoteVariationToMain(GameTree node) {
 		int index = 0;
 		while (index < variations.size() && variations.get(index) != node) {
