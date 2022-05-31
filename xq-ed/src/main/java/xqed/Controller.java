@@ -14,6 +14,7 @@ import java.util.Optional;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.control.TextArea;
@@ -27,8 +28,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
 import javafx.util.Pair;
-
+import xqed.gui.AnalysisPane;
 import xqed.gui.BoardPane;
+import xqed.gui.GraphPane;
 import xqed.gui.MovePane;
 import xqed.gui.MovePane.StringTree;
 import xqed.gui.TagStage;
@@ -76,7 +78,13 @@ public class Controller {
 	public Move.MoveFormat format;
 	/** The pane where the board is displayed. */
 	public BoardPane boardPane;
+	public Button navStart;
+	public Button navBack;
+	public Button navForward;
+	public Button navEnd;
 	public Pane boardParent;
+	public AnalysisPane analysisPane;
+	public GraphPane graphPane;
 	
 	/** The toggle group for the move format. */
 	public ToggleGroup moveFormatGroup;
@@ -91,6 +99,9 @@ public class Controller {
 	private boolean gameChanged;
 	/** The filename of the current game if it exists. */
 	private Optional<File> gameFile;
+	
+	/** The engine to use for analysis. */
+	private Engine engine;
 	
 	/**
 	 * Construct a new controller with a fresh game.
@@ -113,6 +124,7 @@ public class Controller {
 	public void initialize(Window topLevel) {
 		boardPane.drawBoard(new Position());
 		movePane.setController(this);
+		analysisPane.setController(this);
 		moveFormatGroup.selectToggle(wxfToggle);
 		topLevelWindow = topLevel;
 
@@ -188,6 +200,22 @@ public class Controller {
 		boardPane.drawBoard(current.getPosition());
 		commentArea.setText(current.getComment());
 		updateMoves();
+		
+		if (!current.hasParent()) {
+			navBack.setDisable(true);
+			navStart.setDisable(true);
+		} else {
+			navBack.setDisable(false);
+			navStart.setDisable(false);
+		}
+		
+		if (!current.hasContinuation()) {
+			navForward.setDisable(true);
+			navEnd.setDisable(true);
+		} else {
+			navForward.setDisable(false);
+			navEnd.setDisable(false);
+		}
 	}
 	
 	/**
@@ -665,5 +693,37 @@ public class Controller {
 				game.clearTag(s);
 			}
 		}
+	}
+	
+	public void loadEngine() {
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Choose Engine");
+		File chosen = fc.showOpenDialog(topLevelWindow);
+		if (chosen == null) {
+			return;
+		}
+		try {
+			engine.loadEngine(chosen);
+		} catch (IOException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Could not start engine " + chosen.toString());
+			a.showAndWait();
+		}
+	}
+	
+	public void startEngine() {
+		// TODO
+	}
+	
+	public void stopEngine() {
+		// TODO
+	}
+	
+	public void runAnalysis() {
+		// TODO
+	}
+	
+	public void configureEngine() {
+		// TODO
 	}
 }

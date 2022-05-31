@@ -16,7 +16,9 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.ToggleGroup?>
 
+<?import xqed.gui.AnalysisPane?>
 <?import xqed.gui.BoardPane?>
+<?import xqed.gui.GraphPane?>
 <?import xqed.gui.MovePane?>
 
 <VBox xmlns:fx="http://javafx.com/fxml">
@@ -62,6 +64,14 @@
         </Menu>
       </items>
     </Menu>
+    <Menu>
+      <items>
+        <MenuItem text="_Load Engine" onAction="#loadEngine"/>
+        <MenuItem text="_Start Engine" onAction="#startEngine"/>
+        <MenuItem text="S_top Engine" onAction="#stopEngine"/>
+        <MenuItem text="Run Full-Game _Anlysis" onAction="#runAnalysis"/>
+      </items>
+    </Menu>
     </menus>
   </MenuBar>
   <SplitPane orientation="VERTICAL">
@@ -78,10 +88,10 @@
         </center>
         <bottom>
           <HBox>
-            <Button text="Start" onAction="#goToBeginning"/>
-            <Button text="Back" onAction="#goBack"/>
-            <Button text="Forward" onAction="#goForward"/>
-            <Button text="End" onAction="#goToEnd"/>
+            <Button text="Start" fx:id="navStart" onAction="#goToBeginning"/>
+            <Button text="Back" fx:id="navBack" onAction="#goBack"/>
+            <Button text="Forward" fx:id="navForward" onAction="#goForward"/>
+            <Button text="End" fx:id="navEnd" onAction="#goToEnd"/>
           </HBox>
         </bottom>
         <right>
@@ -100,8 +110,8 @@
       </BorderPane>
     </SplitPane>
     <SplitPane>
-      <Label text="Graph"/>
-      <Label text="Engine"/>
+      <GraphPane fx:id="graphPane"/>
+      <AnalysisPane fx:id="analysisPane"/>
     </SplitPane>
   </SplitPane>
 </VBox>

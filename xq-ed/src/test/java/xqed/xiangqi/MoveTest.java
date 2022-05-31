@@ -50,19 +50,19 @@ class MoveTest {
 		// For the rest we only test the move formats that need new behavior.
 		// UCCI is simple and doesn't need any more testing.
 
-		// . . . . K . . . .
-		// r . . . . . . . .
+		// . . . . k . . . .
+		// R . . . . . . . .
 		// . . . . . . . . .
-		// . . . . . . . P .
-		// r . . . . . . . .
+		// . . . . . . . p .
+		// R . . . . . . . .
 		// . . . . . . . . .
-		// . . . . . . . P .
+		// . . . . . . . p .
 		// . . . . . . . . .
-		// . . . . . . . P .
-		// . . . k . . . . .
+		// . . . . . . . p .
+		// . . . K . . . . .
 		Position testPos = null;
 		try {
-			testPos = new Position("4K4/r6P1/9/7P1/r8/9/7P1/9/9/3k5");
+			testPos = new Position("4k4/R6p1/9/7p1/R8/9/7p1/9/9/3K5");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}
@@ -102,19 +102,19 @@ class MoveTest {
 		
 		// WXF doesn't distinguish these kinds of moves.
 		
-		// . . . . K C . . .
-		// . . . . . A . . .
-		// . . . . . E . . .
+		// . . . . k c . . .
+		// . . . . . a . . .
+		// . . . . . e . . .
 		// . . . . . . . . .
-		// . . . . . . . p .
-		// h . . . . . . . .
-		// . . . . . . . . H
-		// R . . . . . p . .
+		// . . . . . . . P .
+		// H . . . . . . . .
+		// . . . . . . . . h
+		// r . . . . . P . .
 		// . . . . . . . . .
-		// . . . . . k . . .
+		// . . . . . K . . .
 		
 		try {
-			testPos = new Position("4KC3/5A3/5E3/9/7p1/h8/8H/R5p2/9/5k3");
+			testPos = new Position("4kc3/5a3/5e3/9/7P1/H8/8h/r5P2/9/5K3");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}

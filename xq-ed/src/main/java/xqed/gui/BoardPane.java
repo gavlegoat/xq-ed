@@ -381,4 +381,34 @@ public class BoardPane extends Canvas {
 			drawBoard(currentPos);
 		}
 	}
+	
+	@Override
+	public double maxWidth(double height) {
+		return Double.MAX_VALUE;
+	}
+	
+	@Override
+	public double maxHeight(double width) {
+		return Double.MAX_VALUE;
+	}
+	
+	@Override
+	public double minWidth(double height) {
+		return initialWidth / 2;
+	}
+	
+	@Override
+	public double minHeight(double width) {
+		return initialHeight / 2;
+	}
+	
+	@Override
+	public double prefWidth(double height) {
+		return initialWidth;
+	}
+	
+	@Override
+	public double prefHeight(double width) {
+		return initialHeight;
+	}
 }

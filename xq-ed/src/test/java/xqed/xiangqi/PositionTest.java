@@ -28,7 +28,7 @@ class PositionTest {
 		
 		try {
 			pos = new Position(
-					"RHEAKAEHR/9/1C5C1/P1P1P1P1P/9/9/p1p1p1p1p/1c5c1/9/rheakaehr");
+					"rheakaehr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RHEAKAEHR");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}
@@ -48,7 +48,7 @@ class PositionTest {
 		
 		Position pos = null;
 		try {
-			pos = new Position("4K4/9/9/9/9/9/9/9/9/5k3");
+			pos = new Position("4k4/9/9/9/9/9/9/9/9/5K3");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}
@@ -58,7 +58,7 @@ class PositionTest {
 		assertFalse(pos.inCheck(Piece.Color.BLACK, 4, 0, 3, 0));
 		
 		try {
-			pos = new Position("4K4/9/4p4/7h1/9/9/R8/9/9/4k4");
+			pos = new Position("4k4/9/4P4/7H1/9/9/r8/9/9/4K4");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}
@@ -131,7 +131,7 @@ class PositionTest {
 				new Pair<>(8, 0), new Pair<>(7, 0)));
 		
 		try {
-			newPos = new Position("4K4/9/r8/9/9/r8/9/9/9/5k3");
+			newPos = new Position("4k4/9/R8/9/9/R8/9/9/9/5K3");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}
@@ -160,7 +160,7 @@ class PositionTest {
 				new Pair<>(0, 5), new Pair<>(0, 4)));
 		
 		try {
-			newPos = new Position("4KA3/1H7/9/P8/9/P7c/9/P1h6/9/2e2k3");
+			newPos = new Position("4ka3/1h7/9/p8/9/p7C/9/p1H6/9/2E2K3");
 		} catch (ParseException e) {
 			fail("Unable to parse position");
 		}

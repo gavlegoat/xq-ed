@@ -66,66 +66,66 @@ public class Piece {
 	 * strings. The piece code may be any of 'a' for advisor, 'c' for cannon,
 	 * 'e' for elephant, 'h' for horse, 'k' for king, 'p' for pawn, 'r' for
 	 * rook, or their capitalized versions. The lower case letters correspond
-	 * to red pieces and the upper case letters correspond to black pieces.
+	 * to black pieces and the upper case letters correspond to red pieces.
 	 * @param code The character representing this piece.
 	 * @throws ParseException If the given character does not represent a piece.
 	 */
 	public Piece(char code) throws ParseException {
 		switch (code) {
 		case 'a':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.ADVISOR;
 			break;
 		case 'A':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.ADVISOR;
 			break;
 		case 'e':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.ELEPHANT;
 			break;
 		case 'E':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.ELEPHANT;
 			break;
 		case 'h':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.HORSE;
 			break;
 		case 'H':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.HORSE;
 			break;
 		case 'k':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.KING;
 			break;
 		case 'K':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.KING;
 			break;
 		case 'r':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.ROOK;
 			break;
 		case 'R':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.ROOK;
 			break;
 		case 'c':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.CANNON;
 			break;
 		case 'C':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.CANNON;
 			break;
 		case 'p':
-			this.color = Color.RED;
+			this.color = Color.BLACK;
 			this.type = Type.PAWN;
 			break;
 		case 'P':
-			this.color = Color.BLACK;
+			this.color = Color.RED;
 			this.type = Type.PAWN;
 			break;
 		default:
@@ -212,19 +212,19 @@ public class Piece {
 	public char getCode() {
 		switch (type) {
 		case PAWN:
-			return color == Color.RED ? 'p' : 'P';
+			return color == Color.BLACK ? 'p' : 'P';
 		case CANNON:
-			return color == Color.RED ? 'c' : 'C';
+			return color == Color.BLACK ? 'c' : 'C';
 		case ROOK:
-			return color == Color.RED ? 'r' : 'R';
+			return color == Color.BLACK ? 'r' : 'R';
 		case HORSE:
-			return color == Color.RED ? 'h' : 'H';
+			return color == Color.BLACK ? 'h' : 'H';
 		case ELEPHANT:
-			return color == Color.RED ? 'e' : 'E';
+			return color == Color.BLACK ? 'e' : 'E';
 		case ADVISOR:
-			return color == Color.RED ? 'a' : 'A';
+			return color == Color.BLACK ? 'a' : 'A';
 		case KING:
-			return color == Color.RED ? 'k' : 'K';
+			return color == Color.BLACK ? 'k' : 'K';
 		default:
 			return '-';
 		}

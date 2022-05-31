@@ -69,9 +69,9 @@ public class Position {
 	 * is a string representing the occupancy of one rank, with r1 being Black's
 	 * back rank and r10 being Red's back rank. Each character of ri may be
 	 * either a code representing a piece, or a digit. If it is a digit, that
-	 * many points are empty before the next piece code. See {@link Position}
+	 * many points are empty before the next piece code. See {@link Piece}
 	 * for a list of valid piece codes. For example, the starting position is:
-	 * "RNEAKAENR/9/1C5C1/P1P1P1P1P/9/9/p1p1p1p1p/1c5c1/9/rneakaenr".
+	 * "rheakaehr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RHEAKAEHR".
 	 * @param fen A (partial) FEN string representing a Xiangqi position.
 	 * @throws ParseException
 	 */
