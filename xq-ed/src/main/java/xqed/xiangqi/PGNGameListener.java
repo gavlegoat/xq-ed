@@ -87,8 +87,12 @@ public class PGNGameListener extends PGNBaseListener {
 			pgnError = Optional.of(e);
 			return;
 		}
+		int move = treePointer.getMoveNum();
+		if (treePointer.getPlayerToMove() == Piece.Color.RED) {
+			move++;
+		}
 		Position newPos = treePointer.getPosition().makeMove(m);
-		GameTree newNode = new GameTree(newPos, treePointer, m);
+		GameTree newNode = new GameTree(newPos, treePointer, m, move);
 		treePointer.addVariation(newNode);
 		treePointer = newNode;
 	}

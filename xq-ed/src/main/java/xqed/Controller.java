@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -28,6 +31,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
 import javafx.util.Pair;
+import xqed.gui.AnalysisConfigStage;
 import xqed.gui.AnalysisPane;
 import xqed.gui.BoardPane;
 import xqed.gui.GraphPane;
@@ -102,6 +106,7 @@ public class Controller {
 	
 	/** The engine to use for analysis. */
 	private Engine engine;
+	private SimpleObjectProperty<Engine.EngineInfo> engineInfo;
 	
 	/**
 	 * Construct a new controller with a fresh game.
@@ -115,6 +120,15 @@ public class Controller {
 		format = Move.MoveFormat.RELATIVE;
 		gameChanged = false;
 		gameFile = Optional.empty();
+		engine = new Engine(this);
+		engineInfo = new SimpleObjectProperty<>();
+		engineInfo.addListener(new ChangeListener<Engine.EngineInfo>() {
+			@Override
+			public void changed(ObservableValue<? extends Engine.EngineInfo> observable,
+					Engine.EngineInfo oldInfo, Engine.EngineInfo newInfo) {
+				updateEngineLines(newInfo);
+			}
+		});
 	}
 	
 	/**
@@ -411,7 +425,11 @@ public class Controller {
 		Position newPos = current.getPosition().clone();
 		newPos.clearPiece(m.getFromSquare().getKey(), m.getFromSquare().getValue());
 		newPos.setPiece(m.getToSquare().getKey(), m.getToSquare().getValue(), m.getPiece());
-		GameTree newNode = new GameTree(newPos, current, m);
+		int moveNum = current.getMoveNum();
+		if (current.getPlayerToMove() == Piece.Color.BLACK) {
+			moveNum++;
+		}
+		GameTree newNode = new GameTree(newPos, current, m, moveNum);
 		current.addVariation(newNode);
 		current = newNode;
 	}
@@ -685,6 +703,10 @@ public class Controller {
 		stage.showAndWait();
 	}
 	
+	/**
+	 * Update the values of PGN tags.
+	 * @param values The new values for each tag.
+	 */
 	public void updateTags(HashMap<String, String> values) {
 		for (String s : Game.possiblePGNTags) {
 			if (values.containsKey(s)) {
@@ -695,6 +717,9 @@ public class Controller {
 		}
 	}
 	
+	/**
+	 * Ask the user for an engine executable, load it, and initialize it.
+	 */
 	public void loadEngine() {
 		FileChooser fc = new FileChooser();
 		fc.setTitle("Choose Engine");
@@ -702,28 +727,114 @@ public class Controller {
 		if (chosen == null) {
 			return;
 		}
+		boolean loaded = false;
+		String name = "";
 		try {
-			engine.loadEngine(chosen);
+			name = engine.loadEngine(chosen);
+			loaded = true;
 		} catch (IOException e) {
 			Alert a = new Alert(Alert.AlertType.ERROR,
 					"Could not start engine " + chosen.toString());
 			a.showAndWait();
+		} catch (ParseException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Error interacting with engine: " + e.getMessage());
+			a.showAndWait();
+		}
+		if (loaded) {
+			analysisPane.enableAnalysisButtons();
+			analysisPane.setEngineName(name);
 		}
 	}
 	
+	/**
+	 * Set the engine to the current position and start it thinking.
+	 */
 	public void startEngine() {
-		// TODO
+		try {
+			engine.setPosition(current.getPosition().toString(),
+					current.getPlayerToMove() == Piece.Color.RED, 1);
+			engine.startEngine();
+		} catch (IOException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Unable to start engine");
+			a.showAndWait();
+		}
 	}
 	
+	/**
+	 * Stop a running engine.
+	 */
 	public void stopEngine() {
-		// TODO
+		try {
+			engine.stopEngine();
+		} catch (IOException e) {
+			Alert a = new Alert(Alert.AlertType.ERROR,
+					"Unable to stop engine");
+			a.showAndWait();
+		}
 	}
 	
+	/**
+	 * Run the engine on every move up to some predetermined limits. This method
+	 * first shows a dialog to the user which they can use to set limits on the
+	 * search (e.g., 20 seconds / move), then runs the engine on each move with
+	 * the specified limits. The dialog should also ask the user whether to
+	 * write the analysis in comments or add variations. Note that the graph
+	 * should always be updated.
+	 */
 	public void runAnalysis() {
-		// TODO
+		AnalysisConfigStage analysisStage = new AnalysisConfigStage();
+		analysisStage.showAndWait();
 	}
 	
+	/**
+	 * Set options for the currently loaded engine.
+	 */
 	public void configureEngine() {
 		// TODO
 	}
+	
+	/**
+	 * Used as a callback to update the analysis pane with information from the
+	 * engine.
+	 * @param info The information given by the engine.
+	 */
+	public void updateEngineLines(Engine.EngineInfo info) {
+		// Convert moves to the appropriate format.
+		// FIXME: The lines are not being displayed -- only scores.
+		String[] lines = info.getLines();
+		String[] toWrite = new String[lines.length];
+		for (int i = 0; i < lines.length; i++) {
+			String[] moves = lines[i].strip().split("\\s+");
+			Position cur = current.getPosition().clone();
+			Piece.Color toMove = current.getPlayerToMove();
+			StringBuilder text = new StringBuilder();
+			int moveNum = current.getMoveNum();
+			for (String move : moves) {
+				if (toMove == Piece.Color.RED) {
+					moveNum++;
+					text.append(" ");
+					text.append(Integer.toString(moveNum));
+					text.append(".");
+				}
+				Move m = null;
+				try {
+					m = cur.interpretMove(move, toMove);
+				} catch (ParseException e) {
+					break;
+				}
+				text.append(" ");
+				text.append(m.write(cur, format));
+				cur.makeMove(m);
+				toMove = Piece.switchColor(toMove);
+			}
+			// Remove the first space
+			text.deleteCharAt(0);
+			toWrite[i] = text.toString();
+		}
+		analysisPane.setEngineInfo(info.getScores(), toWrite,
+				info.getNodes(), info.getDepth(), info.getTime());
+	}
+	
 }

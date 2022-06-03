@@ -1043,6 +1043,9 @@ public class Position {
 		throw new ParseException("Illegal move: " + move, 0);
 	}
 	
+	/**
+	 * Generate a string representation of this position in FEN notation.
+	 */
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

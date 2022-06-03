@@ -126,8 +126,6 @@ public class Game {
 	private void pgnRecurse(GameTree node, Move.MoveFormat format,
 			StringBuilder sb, int moveNumber, boolean newMove,
 			Piece.Color color, int indent) throws ParseException {
-		// FIXME: This should write one move from the main line before
-		// variations
 		if (node.hasMove()) {
 			if (color == Piece.Color.RED || newMove) {
 				sb.append(moveNumber);

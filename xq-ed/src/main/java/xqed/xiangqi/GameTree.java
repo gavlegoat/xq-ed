@@ -27,6 +27,9 @@ public class GameTree {
 	/** The player who can move in this position. */
 	private Piece.Color playerToMove;
 	
+	/** The number of the current move. */
+	private int moveNum;
+	
 	/**
 	 * Construct a new game tree with the starting position and no successors.
 	 */
@@ -37,6 +40,7 @@ public class GameTree {
 		setComment("");
 		variations = new ArrayList<>();
 		playerToMove = Piece.Color.RED;
+		setMoveNum(0);
 	}
 	
 	/**
@@ -46,13 +50,14 @@ public class GameTree {
 	 * @param par The parent node in the game tree.
 	 * @param m The move that led to this position.
 	 */
-	public GameTree(Position pos, GameTree par, Move m) {
+	public GameTree(Position pos, GameTree par, Move m, int n) {
 		position = pos;
 		parent = Optional.of(par);
 		move = Optional.of(m);
 		setComment("");
 		variations = new ArrayList<>();
 		playerToMove = par.getPlayerToMove() == Piece.Color.RED ? Piece.Color.BLACK : Piece.Color.RED;
+		setMoveNum(n);
 	}
 	
 	/**
@@ -200,6 +205,14 @@ public class GameTree {
 		}
 		variations.remove(index);
 		variations.add(0, node);
+	}
+
+	public int getMoveNum() {
+		return moveNum;
+	}
+
+	public void setMoveNum(int moveNum) {
+		this.moveNum = moveNum;
 	}
 	
 }
