@@ -802,16 +802,21 @@ public class Controller {
 	 */
 	public void updateEngineLines(Engine.EngineInfo info) {
 		// Convert moves to the appropriate format.
-		// FIXME: The lines are not being displayed -- only scores.
 		String[] lines = info.getLines();
 		String[] toWrite = new String[lines.length];
+		double[] convertedScores = new double[lines.length];
 		for (int i = 0; i < lines.length; i++) {
+			Piece.Color toMove = current.getPlayerToMove();
+			convertedScores[i] = toMove == Piece.Color.RED ?
+					info.getScores()[i] : -info.getScores()[i];
 			String[] moves = lines[i].strip().split("\\s+");
 			Position cur = current.getPosition().clone();
-			Piece.Color toMove = current.getPlayerToMove();
 			StringBuilder text = new StringBuilder();
 			int moveNum = current.getMoveNum();
 			for (String move : moves) {
+				if (move.isBlank()) {
+					continue;
+				}
 				if (toMove == Piece.Color.RED) {
 					moveNum++;
 					text.append(" ");
@@ -827,14 +832,21 @@ public class Controller {
 				text.append(" ");
 				text.append(m.write(cur, format));
 				cur.makeMove(m);
+				// Scores are returned from the engine's point of view.
 				toMove = Piece.switchColor(toMove);
 			}
 			// Remove the first space
-			text.deleteCharAt(0);
+			if (text.length() > 0) {
+				text.deleteCharAt(0);
+			}
 			toWrite[i] = text.toString();
 		}
-		analysisPane.setEngineInfo(info.getScores(), toWrite,
+		analysisPane.setEngineInfo(convertedScores, toWrite,
 				info.getNodes(), info.getDepth(), info.getTime());
+		graphPane.setScore(current.getMoveNum(),
+				current.getPlayerToMove() == Piece.Color.RED,
+				convertedScores[0]);
+		graphPane.drawGraph();
 	}
 	
 }

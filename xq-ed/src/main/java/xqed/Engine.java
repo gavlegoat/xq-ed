@@ -150,7 +150,8 @@ public class Engine {
 						index += 2;
 					} else if (words[index].equals("score")) {
 						// words[index + 1] = 'cp'
-						info.setScore(pv, Double.parseDouble(words[index + 2]) / 100);
+						double score = Double.parseDouble(words[index + 2]) / 100;
+						info.setScore(pv, score);
 						index += 3;
 					} else if (words[index].equals("pv")) {
 						StringBuilder line = new StringBuilder();
@@ -278,7 +279,7 @@ public class Engine {
 		}
 		
 		if (options.containsKey("Hash")) {
-			int value = Integer.min(2048, parseMax(options.get("Hash")));
+			int value = Integer.min(1024, parseMax(options.get("Hash")));
 			engineIn.write(String.format("setoption Hash %d", value));
 			engineIn.newLine();
 			engineIn.flush();

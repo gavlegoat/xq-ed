@@ -87,7 +87,7 @@ public class AnalysisPane extends Pane {
 		for (int i = 0; i < length; i++) {
 			lines[i].setText(String.format("%f: %s", scores[i], text[i]));
 		}
-		// TODO
+		// Display other infor -- depth, nodes, etc.
 	}
 	
 	public void enableAnalysisButtons() {
