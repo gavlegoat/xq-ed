@@ -193,6 +193,10 @@ public class Engine {
 	/** The thread responsible for listening to engine output. */
 	private Thread listenerThread;
 	private Controller controller;
+	private boolean isRunning;
+	private String currentPos;
+	private boolean currentRedToMove;
+	private int currentMove;
 
 	public Engine(Controller ctrl) {
 		exe = null;
@@ -200,6 +204,10 @@ public class Engine {
 		engineIn = null;
 		numPV = 0;
 		controller = ctrl;
+		isRunning = false;
+		currentPos = "";
+		currentRedToMove = true;
+		currentMove = 0;
 	}
 	
 	/**
@@ -327,6 +335,17 @@ public class Engine {
 	 * @throws IOException If the engine can't be communicated with.
 	 */
 	public void setPosition(String fen, boolean redToMove, int move) throws IOException {
+		if (fen.equals(currentPos) && redToMove == currentRedToMove && move == currentMove) {
+			return;
+		}
+		currentPos = fen;
+		currentRedToMove = redToMove;
+		currentMove = move;
+		boolean startAgain = false;
+		if (isRunning) {
+			startAgain = true;
+			stopEngine();
+		}
 		String toWrite = fen.replace('h', 'n').replace('e', 'b')
 				.replace('H', 'N').replace('E', 'B');
 		toWrite += redToMove ? " w" : " b";
@@ -334,6 +353,10 @@ public class Engine {
 		engineIn.write("position fen " + toWrite);
 		engineIn.newLine();
 		engineIn.flush();
+		if (startAgain) {
+			startEngine();
+			isRunning = true;
+		}
 	}
 	
 	/**
@@ -344,6 +367,9 @@ public class Engine {
 		engineIn.write("position startpos");
 		engineIn.newLine();
 		engineIn.flush();
+		currentPos = "rheakaehr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RHAEKAEHR";
+		currentRedToMove = true;
+		currentMove = 1;
 	}
 	
 	/**
@@ -358,6 +384,7 @@ public class Engine {
 		engineIn.flush();
 		listenerThread.setDaemon(true);
 		listenerThread.start();
+		isRunning = true;
 	}
 	
 	/**
@@ -366,6 +393,9 @@ public class Engine {
 	 * @throws IOException If the engine can't be communicated with.
 	 */
 	public String stopEngine() throws IOException {
+		if (!isRunning) {
+			return "";
+		}
 		engineListener.cancel();
 		try {
 			listenerThread.join(1000);
@@ -379,10 +409,15 @@ public class Engine {
 			line = engineOut.readLine().strip();
 			words = line.strip().split("\\s+");
 		}
+		isRunning = false;
 		if (words.length > 3 && words[2].equals("ponder")) {
 			return words[3];
 		}
 		return "";
+	}
+	
+	public boolean isRunning() {
+		return isRunning;
 	}
 	
 }

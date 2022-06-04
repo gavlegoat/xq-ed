@@ -139,6 +139,7 @@ public class Controller {
 		boardPane.drawBoard(new Position());
 		movePane.setController(this);
 		analysisPane.setController(this);
+		graphPane.setController(this);
 		moveFormatGroup.selectToggle(wxfToggle);
 		topLevelWindow = topLevel;
 
@@ -229,6 +230,13 @@ public class Controller {
 		} else {
 			navForward.setDisable(false);
 			navEnd.setDisable(false);
+		}
+		if (engine.isRunning()) {
+			try {
+				engine.setPosition(current.getPosition().toString(),
+						current.getPlayerToMove() == Piece.Color.RED,
+						current.getMoveNum());
+			} catch (IOException e) {}
 		}
 	}
 	
@@ -446,6 +454,17 @@ public class Controller {
 		Pair<Integer, Integer> square = boardPane.getSquareFromPixels(e.getX(), e.getY());
 		int file = square.getKey();
 		int rank = square.getValue();
+		if (file < 0 || file > 8 || rank < 0 || rank > 9) {
+			// Clicked out of the board. This should cancel the current move if
+			// one exists.
+			if (movingPiece) {
+				movingPiece = false;
+				startFile = -1;
+				startRank = -1;
+				updateAll();
+			}
+			return;
+		}
 		Position pos = current.getPosition();
 		// If a piece is currently moving, then this click should either
 		// complete or cancel that move.
@@ -606,19 +625,6 @@ public class Controller {
 	}
 	
 	/**
-	 * Set the node at the given path as the current node.
-	 * @param path The path to the desired node.
-	 */
-	private void setNode(LinkedList<Integer> path) {
-		while (current.hasParent()) {
-			current = current.getParent();
-		}
-		for (Integer i : path) {
-			current = current.getVariations().get(i);
-		}
-	}
-	
-	/**
 	 * Delete the tree rooted at the current node.
 	 */
 	@FXML
@@ -639,7 +645,7 @@ public class Controller {
 	 */
 	public void deleteVariation(LinkedList<Integer> path) {
 		GameTree node = current;
-		setNode(path);
+		goToMove(path);
 		deleteVariation();
 		current = node;
 		updateMoves();
@@ -664,7 +670,7 @@ public class Controller {
 	 */
 	public void promoteVariation(LinkedList<Integer> path) {
 		GameTree node = current;
-		setNode(path);
+		goToMove(path);
 		promoteVariation();
 		current = node;
 		updateMoves();
@@ -689,7 +695,7 @@ public class Controller {
 	 */
 	public void makeMainLine(LinkedList<Integer> path) {
 		GameTree node = current;
-		setNode(path);
+		goToMove(path);
 		makeMainLine();
 		current = node;
 		updateMoves();
@@ -786,6 +792,7 @@ public class Controller {
 	public void runAnalysis() {
 		AnalysisConfigStage analysisStage = new AnalysisConfigStage();
 		analysisStage.showAndWait();
+		// TODO
 	}
 	
 	/**
@@ -847,6 +854,50 @@ public class Controller {
 				current.getPlayerToMove() == Piece.Color.RED,
 				convertedScores[0]);
 		graphPane.drawGraph();
+	}
+	
+	/**
+	 * Get a representation of the move with the given number. Note that this
+	 * move number is in terms of plies after the start of the game. The desired
+	 * move is on the path to the current node, and if it comes after the 
+	 * current move then it is along the main line.
+	 * @param moveNum The plies since the game start.
+	 * @return A string representation of the desired move.
+	 */
+	public String getMoveName(int moveNum) {
+		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
+		StringTree names = p.getKey();
+		LinkedList<Integer> path = p.getValue();
+		int index = 0;
+		for (Integer i : path) {
+			names = names.getChildren().get(i);
+			index++;
+			if (index == moveNum - 1) {
+				return names.getCurrent().get();
+			}
+		}
+		while (index < moveNum - 1) {
+			names = names.getChildren().get(0);
+			index++;
+		}
+		return names.getCurrent().orElseGet(() -> "");
+	}
+	
+	/**
+	 * Go to the move with the given index. The semantics are the same as
+	 * {@link getMoveName}.
+	 * @param moveNum The number of the move to go to.
+	 */
+	public void goToMoveNum(int moveNum) {
+		Pair<StringTree, LinkedList<Integer>> p = getCurrentMoveNames();
+		LinkedList<Integer> path = p.getValue();
+		while (path.size() > moveNum - 1) {
+			path.removeLast();
+		}
+		while (path.size() < moveNum - 1) {
+			path.addLast(0);
+		}
+		goToMove(path);
 	}
 	
 }
